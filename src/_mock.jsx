@@ -11,7 +11,7 @@ const allEmployees = [
     id: 1,
     name: 'Edwin Zhoker, S.T.',
     nip: '010229725 / 198804011990032010',
-    jabatan: 'Kepala Bagian Tata Usaha',
+    jabatan: 'Kepala Bagian Ketatausahaan, Humas dan Hukum',
     golongan: 'PEMBINA (IVa)',
     profilePictureUrl: '/assets/profile-pic.jpg',
     // -- Data Lengkap untuk Halaman Profil --
@@ -152,7 +152,7 @@ export const allRiwayatHukuman = [
   { id: 1, employeeId: 3, nama: 'Teguran Lisan', noSk: '862/01/PEG', tglSk: '15-01-2024', tmt: '15-01-2024' },
 ];
 
-
+export const loggedInEmployee = allEmployees[0];
 // --- 3. EXPORT DEFAULT ---
 // Ekspor data pegawai sebagai default agar mudah diimpor di halaman utama daftar pegawai.
 export default allEmployees;
