@@ -1,24 +1,28 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
+import './Header.css'; // <-- 1. Impor file CSS baru
 
 const Header = ({ toggleSidebar }) => {
-  // Fungsi ini bisa Anda ganti dengan logika logout yang sebenarnya
+  const { logout } = useAuth();
+
   const handleLogout = () => {
-    alert('Tombol Logout diklik!');
-    // Contoh: panggil fungsi logout dari context, redirect, dll.
+    logout();
   };
 
   return (
     <header className="header">
-      {/* Tombol toggle sidebar di kiri */}
       <button onClick={toggleSidebar} className="sidebar-toggle-btn">
         ☰
       </button>
-      
-      <h1>
-        Sistem Informasi Manajemen Kepegawian RS dr. Hasri Ainun Habibie
-      </h1>
 
-      {/* Tombol Logout baru di kanan */}
+      {/* 2. Tambahkan kontainer untuk logo dan judul */}
+      <div className="header-title-container">
+        <img src="/assets/logo2.png" alt="Logo RS" className="header-logo" />
+        <h1>
+          Sistem Informasi Manajemen Kepegawaian RS dr. Hasri Ainun Habibie
+        </h1>
+      </div>
+
       <button onClick={handleLogout} className="logout-btn">
         Logout
       </button>
