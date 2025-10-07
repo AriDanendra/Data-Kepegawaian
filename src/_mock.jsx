@@ -152,6 +152,11 @@ export const allRiwayatHukuman = [
   { id: 1, employeeId: 3, nama: 'Teguran Lisan', noSk: '862/01/PEG', tglSk: '15-01-2024', tmt: '15-01-2024' },
 ];
 
+export const allRiwayatSKPPermenpan = [
+    { id: 'skp-p-1', employeeId: 1, tahun: 2024, predikatKinerja: 'Sangat Baik', hasilEvaluasi: 'Melebihi Ekspektasi', berkasUrl: '#'},
+    { id: 'skp-p-2', employeeId: 1, tahun: 2023, predikatKinerja: 'Baik', hasilEvaluasi: 'Sesuai Ekspektasi', berkasUrl: '#'},
+];
+
 export const loggedInEmployee = allEmployees[0];
 // --- 3. EXPORT DEFAULT ---
 // Ekspor data pegawai sebagai default agar mudah diimpor di halaman utama daftar pegawai.
