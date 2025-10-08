@@ -1,21 +1,30 @@
-// src/pages/profile/RiwayatSKP.jsx (Diperbarui dengan Fitur Modal)
+// src/pages/profile/RiwayatSKP.jsx (Diperbarui dengan Fitur Tambah & Edit)
 
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaSync, FaTrash } from 'react-icons/fa';
 import { allRiwayatSKP } from '../../_mock';
-import Modal from '../../components/Modal'; // 1. Impor komponen Modal
+import Modal from '../../components/Modal';
 
 const RiwayatSKP = () => {
-  // 2. State untuk mengontrol modal
+  // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
+  const [formData, setFormData] = useState(null); // State untuk data form
   const fileInputRef = useRef(null);
 
-  // 3. Handlers untuk modal
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type === 'edit') {
+      setSelectedData(data);
+      setFormData(data);
+    } else if (type === 'add') {
+      setSelectedData(null);
+      setFormData({ tahun: '', nilaiSKP: '', nilaiPerilaku: '', nilaiPrestasi: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -23,18 +32,25 @@ const RiwayatSKP = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSaveChanges = (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
-    if (file) {
-      alert(`Berkas SKP "${file.name}" siap diupload! (cek konsol)`);
-      console.log("File baru:", file);
-    } else {
-      alert("Data SKP disimpan tanpa mengubah berkas! (cek konsol)");
+    
+    if (modalType === 'add') {
+      alert(`Data SKP baru untuk tahun "${formData.tahun}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data SKP untuk tahun "${formData.tahun}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    console.log("Menyimpan data SKP:", selectedData);
     handleCloseModal();
   };
 
@@ -44,26 +60,32 @@ const RiwayatSKP = () => {
     handleCloseModal();
   };
 
-  // 4. Fungsi untuk merender konten modal
+  // --- DYNAMIC CONTENT RENDERING ---
+  const getModalTitle = () => {
+    if (modalType === 'edit') return 'Edit Riwayat SKP';
+    if (modalType === 'add') return 'Tambah Riwayat SKP';
+    return 'Konfirmasi Hapus';
+  };
+  
   const renderModalContent = () => {
-    if (modalType === 'edit' && selectedData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label htmlFor="tahun">Tahun</label>
-            <input type="number" id="tahun" defaultValue={selectedData.tahun} />
+            <input type="number" id="tahun" name="tahun" value={formData.tahun || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label htmlFor="nilaiSKP">Nilai SKP</label>
-            <input type="number" step="0.1" id="nilaiSKP" defaultValue={selectedData.nilaiSKP} />
+            <input type="number" step="0.01" id="nilaiSKP" name="nilaiSKP" value={formData.nilaiSKP || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="nilaiPerilaku">Nilai Perilaku</label>
-            <input type="number" step="0.1" id="nilaiPerilaku" defaultValue={selectedData.nilaiPerilaku} />
+            <input type="number" step="0.01" id="nilaiPerilaku" name="nilaiPerilaku" value={formData.nilaiPerilaku || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="nilaiPrestasi">Nilai Prestasi</label>
-            <input type="number" step="0.1" id="nilaiPrestasi" defaultValue={selectedData.nilaiPrestasi} />
+            <input type="number" step="0.01" id="nilaiPrestasi" name="nilaiPrestasi" value={formData.nilaiPrestasi || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="berkas">Upload Berkas SKP (Opsional)</label>
@@ -71,7 +93,7 @@ const RiwayatSKP = () => {
           </div>
           <div className="modal-form-actions">
             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
           </div>
         </form>
       );
@@ -100,7 +122,7 @@ const RiwayatSKP = () => {
           <h3>Riwayat SKP</h3>
           <p className="subtitle">Informasi riwayat SKP.</p>
         </div>
-        <button className="add-button-icon">
+        <button className="add-button-icon" title="Tambah Riwayat SKP" onClick={() => handleOpenModal('add')}>
           <FaPencilAlt />
         </button>
       </div>
@@ -152,7 +174,6 @@ const RiwayatSKP = () => {
                 <td>
                   <div className="action-buttons">
                     <button className="action-btn refresh" title="Refresh"><FaSync /></button>
-                     {/* 5. Tambahkan onClick untuk membuka modal */}
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
                     <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
                   </div>
@@ -173,11 +194,11 @@ const RiwayatSKP = () => {
         </div>
       </div>
 
-      {/* 6. Render komponen Modal di sini */}
+      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        title={modalType === 'edit' ? 'Edit Riwayat SKP' : 'Konfirmasi Hapus'}
+        title={getModalTitle()}
       >
         {renderModalContent()}
       </Modal>

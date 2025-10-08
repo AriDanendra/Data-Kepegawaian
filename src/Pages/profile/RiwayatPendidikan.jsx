@@ -1,21 +1,31 @@
-// src/pages/profile/RiwayatPendidikan.jsx (Diperbarui dengan Fitur Modal)
+// src/pages/profile/RiwayatPendidikan.jsx (Diperbarui dengan Fitur Tambah & Edit)
 
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaSync, FaTrash } from 'react-icons/fa';
 import { allRiwayatPendidikan } from '../../_mock';
-import Modal from '../../components/Modal'; // 1. Impor komponen Modal
+import Modal from '../../components/Modal';
 
 const RiwayatPendidikan = () => {
-  // 2. State untuk mengontrol modal
+  // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
+  const [formData, setFormData] = useState(null); // State untuk data form
   const fileInputRef = useRef(null);
 
-  // 3. Handlers untuk modal
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type === 'edit') {
+      setSelectedData(data);
+      setFormData(data); // Isi form dengan data yang ada
+    } else if (type === 'add') {
+      setSelectedData(null);
+      // Siapkan form kosong untuk data baru
+      setFormData({ namaSekolah: '', jurusan: '', lokasi: '', noIjazah: '', lulus: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -23,18 +33,25 @@ const RiwayatPendidikan = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null); // Reset form data
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSaveChanges = (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
-    if (file) {
-      alert(`Ijazah "${file.name}" siap diupload! (cek konsol)`);
-      console.log("File baru:", file);
-    } else {
-      alert("Data pendidikan disimpan tanpa mengubah berkas! (cek konsol)");
+    
+    if (modalType === 'add') {
+      alert(`Data pendidikan baru "${formData.namaSekolah}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data pendidikan "${formData.namaSekolah}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    console.log("Menyimpan data pendidikan:", selectedData);
     handleCloseModal();
   };
 
@@ -44,30 +61,36 @@ const RiwayatPendidikan = () => {
     handleCloseModal();
   };
 
-  // 4. Fungsi untuk merender konten modal
+  // --- DYNAMIC CONTENT RENDERING ---
+  const getModalTitle = () => {
+    if (modalType === 'edit') return 'Edit Riwayat Pendidikan';
+    if (modalType === 'add') return 'Tambah Riwayat Pendidikan';
+    return 'Konfirmasi Hapus';
+  };
+  
   const renderModalContent = () => {
-    if (modalType === 'edit' && selectedData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label htmlFor="namaSekolah">Nama Sekolah</label>
-            <input type="text" id="namaSekolah" defaultValue={selectedData.namaSekolah} />
+            <input type="text" id="namaSekolah" name="namaSekolah" value={formData.namaSekolah || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label htmlFor="jurusan">Jurusan</label>
-            <input type="text" id="jurusan" defaultValue={selectedData.jurusan} />
+            <input type="text" id="jurusan" name="jurusan" value={formData.jurusan || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="lokasi">Lokasi</label>
-            <input type="text" id="lokasi" defaultValue={selectedData.lokasi} />
+            <input type="text" id="lokasi" name="lokasi" value={formData.lokasi || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="noIjazah">No. Ijazah</label>
-            <input type="text" id="noIjazah" defaultValue={selectedData.noIjazah} />
+            <input type="text" id="noIjazah" name="noIjazah" value={formData.noIjazah || ''} onChange={handleInputChange} />
           </div>
-           <div className="modal-form-group">
+          <div className="modal-form-group">
             <label htmlFor="lulus">Tahun Lulus</label>
-            <input type="text" id="lulus" defaultValue={selectedData.lulus} />
+            <input type="text" id="lulus" name="lulus" value={formData.lulus || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="berkas">Upload Ijazah (Opsional)</label>
@@ -75,7 +98,7 @@ const RiwayatPendidikan = () => {
           </div>
           <div className="modal-form-actions">
             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
           </div>
         </form>
       );
@@ -104,7 +127,7 @@ const RiwayatPendidikan = () => {
           <h3>Riwayat Pendidikan</h3>
           <p className="subtitle">Informasi riwayat pendidikan.</p>
         </div>
-        <button className="add-button-icon">
+        <button className="add-button-icon" title="Tambah Riwayat Pendidikan" onClick={() => handleOpenModal('add')}>
           <FaPencilAlt />
         </button>
       </div>
@@ -156,7 +179,6 @@ const RiwayatPendidikan = () => {
                 <td>
                   <div className="action-buttons">
                     <button className="action-btn refresh"><FaSync /></button>
-                     {/* 5. Tambahkan onClick untuk membuka modal */}
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
                     <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
                   </div>
@@ -177,11 +199,11 @@ const RiwayatPendidikan = () => {
         </div>
       </div>
 
-      {/* 6. Render komponen Modal di sini */}
+      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        title={modalType === 'edit' ? 'Edit Riwayat Pendidikan' : 'Konfirmasi Hapus'}
+        title={getModalTitle()}
       >
         {renderModalContent()}
       </Modal>

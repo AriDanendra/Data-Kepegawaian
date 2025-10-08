@@ -1,21 +1,30 @@
-// src/pages/profile/RiwayatCuti.jsx (Diperbarui dengan Fitur Modal)
+// src/pages/profile/RiwayatCuti.jsx (Final dengan semua elemen UI)
 
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { allRiwayatCuti } from '../../_mock';
-import Modal from '../../components/Modal'; // 1. Impor komponen Modal
+import Modal from '../../components/Modal';
 
 const RiwayatCuti = () => {
-  // 2. State untuk mengontrol modal
+  // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
+  const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
 
-  // 3. Handlers untuk membuka dan menutup modal
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type === 'edit') {
+      setSelectedData(data);
+      setFormData(data);
+    } else if (type === 'add') {
+      setSelectedData(null);
+      setFormData({ jenisCuti: '', nomorSurat: '', tanggalSurat: '', tanggalAwal: '', tanggalSelesai: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -23,19 +32,25 @@ const RiwayatCuti = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null);
   };
 
-  // 4. Handlers untuk menyimpan perubahan dan menghapus (simulasi)
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSaveChanges = (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
-    if (file) {
-      alert(`Berkas surat cuti "${file.name}" siap diupload! (cek konsol)`);
-      console.log("File baru:", file);
-    } else {
-      alert("Data cuti disimpan tanpa mengubah berkas! (cek konsol)");
+    
+    if (modalType === 'add') {
+      alert(`Data cuti baru "${formData.jenisCuti}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data cuti "${formData.jenisCuti}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    console.log("Menyimpan data cuti:", selectedData);
     handleCloseModal();
   };
 
@@ -45,30 +60,36 @@ const RiwayatCuti = () => {
     handleCloseModal();
   };
 
-  // 5. Fungsi untuk merender konten modal secara dinamis
+  // --- DYNAMIC CONTENT RENDERING ---
+  const getModalTitle = () => {
+    if (modalType === 'edit') return 'Edit Riwayat Cuti';
+    if (modalType === 'add') return 'Tambah Riwayat Cuti';
+    return 'Konfirmasi Hapus';
+  };
+  
   const renderModalContent = () => {
-    if (modalType === 'edit' && selectedData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label htmlFor="jenisCuti">Jenis Cuti</label>
-            <input type="text" id="jenisCuti" defaultValue={selectedData.jenisCuti} />
+            <input type="text" id="jenisCuti" name="jenisCuti" value={formData.jenisCuti || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label htmlFor="nomorSurat">Nomor Surat</label>
-            <input type="text" id="nomorSurat" defaultValue={selectedData.nomorSurat} />
+            <input type="text" id="nomorSurat" name="nomorSurat" value={formData.nomorSurat || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tanggalSurat">Tanggal Surat</label>
-            <input type="text" id="tanggalSurat" defaultValue={selectedData.tanggalSurat} />
+            <input type="text" id="tanggalSurat" name="tanggalSurat" value={formData.tanggalSurat || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tanggalAwal">Tanggal Awal</label>
-            <input type="text" id="tanggalAwal" defaultValue={selectedData.tanggalAwal} />
+            <input type="text" id="tanggalAwal" name="tanggalAwal" value={formData.tanggalAwal || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tanggalSelesai">Tanggal Selesai</label>
-            <input type="text" id="tanggalSelesai" defaultValue={selectedData.tanggalSelesai} />
+            <input type="text" id="tanggalSelesai" name="tanggalSelesai" value={formData.tanggalSelesai || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="berkas">Upload Surat Izin Cuti (Opsional)</label>
@@ -76,7 +97,7 @@ const RiwayatCuti = () => {
           </div>
           <div className="modal-form-actions">
             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
           </div>
         </form>
       );
@@ -105,12 +126,12 @@ const RiwayatCuti = () => {
           <h3>Riwayat Cuti</h3>
           <p className="subtitle">Informasi Cuti.</p>
         </div>
-        <button className="add-button-icon">
+        <button className="add-button-icon" title="Tambah Riwayat Cuti" onClick={() => handleOpenModal('add')}>
           <FaPencilAlt />
         </button>
       </div>
 
-      {/* --- KONTROL TABEL --- */}
+      {/* --- KONTROL TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-controls">
         <div className="show-entries">
           <label htmlFor="entries">Show</label>
@@ -158,7 +179,6 @@ const RiwayatCuti = () => {
                 </td>
                 <td>
                   <div className="action-buttons">
-                    {/* 6. Tambahkan onClick untuk membuka modal */}
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
                     <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
                   </div>
@@ -169,7 +189,7 @@ const RiwayatCuti = () => {
         </table>
       </div>
       
-      {/* --- FOOTER TABEL --- */}
+      {/* --- FOOTER TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-footer">
         <span>Showing 1 to {allRiwayatCuti.length} of {allRiwayatCuti.length} entries</span>
         <div className="pagination">
@@ -179,11 +199,11 @@ const RiwayatCuti = () => {
         </div>
       </div>
 
-      {/* 7. Render komponen Modal di sini */}
+      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        title={modalType === 'edit' ? 'Edit Riwayat Cuti' : 'Konfirmasi Hapus'}
+        title={getModalTitle()}
       >
         {renderModalContent()}
       </Modal>

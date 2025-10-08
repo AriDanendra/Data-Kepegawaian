@@ -1,21 +1,30 @@
-// src/pages/profile/RiwayatHukuman.jsx (Diperbarui dengan Fitur Modal)
+// src/pages/profile/RiwayatHukuman.jsx (Revisi Final dengan semua elemen UI)
 
 import React, { useState, useRef } from 'react';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa'; // Impor ikon
+import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { allRiwayatHukuman } from '../../_mock';
-import Modal from '../../components/Modal'; // 1. Impor komponen Modal
+import Modal from '../../components/Modal';
 
 const RiwayatHukuman = () => {
-  // 2. State untuk mengontrol modal
+  // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
+  const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
 
-  // 3. Handlers untuk modal
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type === 'edit') {
+      setSelectedData(data);
+      setFormData(data);
+    } else if (type === 'add') {
+      setSelectedData(null);
+      setFormData({ nama: '', noSk: '', tglSk: '', tmt: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -23,18 +32,25 @@ const RiwayatHukuman = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSaveChanges = (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
-    if (file) {
-      alert(`Berkas SK Hukuman "${file.name}" siap diupload! (cek konsol)`);
-      console.log("File baru:", file);
-    } else {
-      alert("Data hukuman disimpan tanpa mengubah berkas! (cek konsol)");
+    
+    if (modalType === 'add') {
+      alert(`Data hukuman baru "${formData.nama}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data hukuman "${formData.nama}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    console.log("Menyimpan data hukuman:", selectedData);
     handleCloseModal();
   };
 
@@ -44,26 +60,32 @@ const RiwayatHukuman = () => {
     handleCloseModal();
   };
 
-  // 4. Fungsi untuk merender konten modal
+  // --- DYNAMIC CONTENT RENDERING ---
+  const getModalTitle = () => {
+    if (modalType === 'edit') return 'Edit Riwayat Hukuman';
+    if (modalType === 'add') return 'Tambah Riwayat Hukuman';
+    return 'Konfirmasi Hapus';
+  };
+  
   const renderModalContent = () => {
-    if (modalType === 'edit' && selectedData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label htmlFor="nama">Nama Hukuman</label>
-            <input type="text" id="nama" defaultValue={selectedData.nama} />
+            <input type="text" id="nama" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label htmlFor="noSk">No. SK</label>
-            <input type="text" id="noSk" defaultValue={selectedData.noSk} />
+            <input type="text" id="noSk" name="noSk" value={formData.noSk || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tglSk">Tgl. SK</label>
-            <input type="text" id="tglSk" defaultValue={selectedData.tglSk} />
+            <input type="text" id="tglSk" name="tglSk" value={formData.tglSk || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tmt">TMT. Hukuman</label>
-            <input type="text" id="tmt" defaultValue={selectedData.tmt} />
+            <input type="text" id="tmt" name="tmt" value={formData.tmt || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="berkas">Upload SK Hukuman (Opsional)</label>
@@ -71,7 +93,7 @@ const RiwayatHukuman = () => {
           </div>
           <div className="modal-form-actions">
             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
           </div>
         </form>
       );
@@ -100,13 +122,12 @@ const RiwayatHukuman = () => {
           <h3>Riwayat Hukuman Disiplin Pegawai</h3>
           <p className="subtitle">Informasi riwayat hukuman disiplin pegawai.</p>
         </div>
-        {/* Tombol Tambah (opsional) */}
-        <button className="add-button-icon" title="Tambah Hukuman">
+        <button className="add-button-icon" title="Tambah Hukuman" onClick={() => handleOpenModal('add')}>
           <FaPencilAlt />
         </button>
       </div>
 
-      {/* --- KONTROL TABEL --- */}
+      {/* --- KONTROL TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-controls">
         <div className="show-entries">
           <label>Show</label>
@@ -129,41 +150,34 @@ const RiwayatHukuman = () => {
               <th>No. SK</th>
               <th>Tgl. SK</th>
               <th>TMT. Hukuman</th>
-              <th>Berkas</th> {/* 5. Tambah kolom Berkas & Opsi */}
+              <th>Berkas</th>
               <th>Opsi</th>
             </tr>
           </thead>
           <tbody>
-            {allRiwayatHukuman.length > 0 ? (
-              allRiwayatHukuman.map((item, index) => (
-                <tr key={item.id}>
-                  <td>{index + 1}</td>
-                  <td>{item.nama}</td>
-                  <td>{item.noSk}</td>
-                  <td>{item.tglSk}</td>
-                  <td>{item.tmt}</td>
-                  <td>
-                    {/* Asumsi data mock memiliki properti berkasUrl */}
-                    <a href={item.berkasUrl || '#'} className="download-button">Download</a>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
-                      <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center' }}>No data available in table</td>
+            {allRiwayatHukuman.map((item, index) => (
+              <tr key={item.id}>
+                <td>{index + 1}</td>
+                <td>{item.nama}</td>
+                <td>{item.noSk}</td>
+                <td>{item.tglSk}</td>
+                <td>{item.tmt}</td>
+                <td>
+                  <a href={item.berkasUrl || '#'} className="download-button">Download</a>
+                </td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
+                    <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
+                  </div>
+                </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
       
-      {/* --- FOOTER TABEL --- */}
+      {/* --- FOOTER TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-footer">
         <span>Showing 1 to {allRiwayatHukuman.length} of {allRiwayatHukuman.length} entries</span>
         <div className="pagination">
@@ -173,11 +187,11 @@ const RiwayatHukuman = () => {
         </div>
       </div>
 
-      {/* 6. Render komponen Modal di sini */}
+      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        title={modalType === 'edit' ? 'Edit Riwayat Hukuman' : 'Konfirmasi Hapus'}
+        title={getModalTitle()}
       >
         {renderModalContent()}
       </Modal>

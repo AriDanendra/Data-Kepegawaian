@@ -1,15 +1,16 @@
-// src/pages/profile/DataKeluarga.jsx (Kode yang Diperbarui)
+// src/pages/profile/DataKeluarga.jsx (Final dengan Kontrol Tabel di setiap bagian)
 
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { allDataKeluarga } from '../../_mock';
-import Modal from '../../components/Modal'; // Impor komponen Modal
+import Modal from '../../components/Modal';
 
 const DataKeluarga = () => {
   // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState(''); // Cth: 'edit-pasangan', 'delete-anak'
+  const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
+  const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
 
   // --- DATA FILTERING ---
@@ -17,10 +18,20 @@ const DataKeluarga = () => {
   const dataOrangTua = allDataKeluarga.filter(d => d.kategori === 'orangtua');
   const dataAnak = allDataKeluarga.filter(d => d.kategori === 'anak');
 
-  // --- MODAL HANDLERS ---
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS (Tidak ada perubahan) ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type.startsWith('edit')) {
+      setSelectedData(data);
+      setFormData(data);
+    } else if (type.startsWith('add')) {
+      setSelectedData(null);
+      if (type === 'add-pasangan') setFormData({ kategori: 'pasangan', nama: '', ttl: '', tglKawin: '' });
+      if (type === 'add-orangtua') setFormData({ kategori: 'orangtua', nama: '', status: '', ttl: '', alamat: '' });
+      if (type === 'add-anak') setFormData({ kategori: 'anak', nama: '', ttl: '', pendidikan: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -28,18 +39,25 @@ const DataKeluarga = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null);
+  };
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSaveChanges = (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
-    if (file) {
-      alert(`Berkas "${file.name}" siap diupload! (cek konsol)`);
-      console.log("File baru:", file);
-    } else {
-      alert("Data disimpan tanpa mengubah berkas! (cek konsol)");
+    
+    if (modalType.startsWith('add')) {
+      alert(`Data baru "${formData.nama}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data untuk "${formData.nama}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    console.log("Menyimpan data:", selectedData);
     handleCloseModal();
   };
 
@@ -49,32 +67,32 @@ const DataKeluarga = () => {
     handleCloseModal();
   };
   
-  // --- DYNAMIC CONTENT RENDERING ---
-
-  // Fungsi untuk mendapatkan judul modal secara dinamis
+  // --- DYNAMIC CONTENT RENDERING (Tidak ada perubahan) ---
   const getModalTitle = () => {
     if (modalType.startsWith('edit')) return 'Edit Data Keluarga';
+    if (modalType.startsWith('add')) return 'Tambah Data Keluarga';
     if (modalType.startsWith('delete')) return 'Konfirmasi Hapus Data';
     return 'Modal';
   };
 
-  // Fungsi untuk merender form atau konten di dalam modal
   const renderModalContent = () => {
-    // Form untuk Suami/Istri
-    if (modalType === 'edit-pasangan' && selectedData) {
+    if (!formData && (modalType.startsWith('edit') || modalType.startsWith('add'))) return null;
+
+    if (modalType.includes('pasangan')) {
       return (
         <form onSubmit={handleSaveChanges}>
+          {/* ... isi form pasangan ... */}
           <div className="modal-form-group">
             <label>Nama Suami / Istri</label>
-            <input type="text" defaultValue={selectedData.nama} />
+            <input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label>Tempat, Tgl. Lahir</label>
-            <input type="text" defaultValue={selectedData.ttl} />
+            <input type="text" name="ttl" value={formData.ttl || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label>Tgl. Kawin</label>
-            <input type="text" defaultValue={selectedData.tglKawin} />
+            <input type="text" name="tglKawin" value={formData.tglKawin || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label>Upload Berkas (Buku Nikah)</label>
@@ -87,68 +105,71 @@ const DataKeluarga = () => {
         </form>
       );
     }
+    
+    if (modalType.includes('orangtua')) {
+      return (
+        <form onSubmit={handleSaveChanges}>
+          {/* ... isi form orang tua ... */}
+          <div className="modal-form-group">
+            <label>Status</label>
+            <select name="status" value={formData.status || ''} onChange={handleInputChange} required>
+              <option value="" disabled>Pilih Status</option>
+              <option value="Bapak Kandung">Bapak Kandung</option>
+              <option value="Ibu Kandung">Ibu Kandung</option>
+            </select>
+          </div>
+          <div className="modal-form-group">
+            <label>Nama</label>
+            <input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
+          </div>
+          <div className="modal-form-group">
+            <label>Tempat, Tgl. Lahir</label>
+            <input type="text" name="ttl" value={formData.ttl || ''} onChange={handleInputChange} />
+          </div>
+          <div className="modal-form-group">
+            <label>Alamat</label>
+            <input type="text" name="alamat" value={formData.alamat || ''} onChange={handleInputChange} />
+          </div>
+          <div className="modal-form-group">
+            <label>Upload Berkas (Kartu Keluarga)</label>
+            <input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" />
+          </div>
+          <div className="modal-form-actions">
+            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      );
+    }
 
-    // Form untuk Orang Tua
-    if (modalType === 'edit-orangtua' && selectedData) {
-        return (
-          <form onSubmit={handleSaveChanges}>
-            <div className="modal-form-group">
-              <label>Nama</label>
-              <input type="text" defaultValue={selectedData.nama} />
-            </div>
-            <div className="modal-form-group">
-              <label>Status</label>
-              <input type="text" defaultValue={selectedData.status} readOnly />
-            </div>
-             <div className="modal-form-group">
-              <label>Tempat, Tgl. Lahir</label>
-              <input type="text" defaultValue={selectedData.ttl} />
-            </div>
-            <div className="modal-form-group">
-              <label>Alamat</label>
-              <input type="text" defaultValue={selectedData.alamat} />
-            </div>
-            <div className="modal-form-group">
-              <label>Upload Berkas (Kartu Keluarga)</label>
-              <input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" />
-            </div>
-            <div className="modal-form-actions">
-              <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-              <button type="submit" className="btn btn-primary">Simpan</button>
-            </div>
-          </form>
-        );
-      }
+    if (modalType.includes('anak')) {
+      return (
+        <form onSubmit={handleSaveChanges}>
+          {/* ... isi form anak ... */}
+          <div className="modal-form-group">
+            <label>Nama Anak</label>
+            <input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
+          </div>
+          <div className="modal-form-group">
+            <label>Tempat, Tgl. Lahir</label>
+            <input type="text" name="ttl" value={formData.ttl || ''} onChange={handleInputChange} />
+          </div>
+          <div className="modal-form-group">
+            <label>Pendidikan</label>
+            <input type="text" name="pendidikan" value={formData.pendidikan || ''} onChange={handleInputChange} />
+          </div>
+          <div className="modal-form-group">
+            <label>Upload Berkas (Akta Lahir)</label>
+            <input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" />
+          </div>
+          <div className="modal-form-actions">
+            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
+          </div>
+        </form>
+      );
+    }
 
-    // Form untuk Anak
-    if (modalType === 'edit-anak' && selectedData) {
-        return (
-          <form onSubmit={handleSaveChanges}>
-            <div className="modal-form-group">
-              <label>Nama Anak</label>
-              <input type="text" defaultValue={selectedData.nama} />
-            </div>
-            <div className="modal-form-group">
-              <label>Tempat, Tgl. Lahir</label>
-              <input type="text" defaultValue={selectedData.ttl} />
-            </div>
-            <div className="modal-form-group">
-              <label>Pendidikan</label>
-              <input type="text" defaultValue={selectedData.pendidikan} />
-            </div>
-            <div className="modal-form-group">
-              <label>Upload Berkas (Akta Lahir)</label>
-              <input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" />
-            </div>
-            <div className="modal-form-actions">
-              <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-              <button type="submit" className="btn btn-primary">Simpan</button>
-            </div>
-          </form>
-        );
-      }
-
-    // Konfirmasi Hapus (berlaku untuk semua)
     if (modalType.startsWith('delete-') && selectedData) {
       return (
         <div>
@@ -161,18 +182,27 @@ const DataKeluarga = () => {
         </div>
       );
     }
-
     return null;
   };
 
-  // --- JSX RENDER ---
   return (
     <div className="data-keluarga-container">
       {/* --- 1. TABEL SUAMI / ISTRI --- */}
       <div className="riwayat-container">
         <div className="riwayat-header">
             <h3>Suami / Istri</h3>
-            <button className="add-button-icon"><FaPencilAlt /></button>
+            <button className="add-button-icon" title="Tambah Data Suami/Istri" onClick={() => handleOpenModal('add-pasangan')}>
+                <FaPencilAlt />
+            </button>
+        </div>
+        {/* === PENAMBAHAN KONTROL TABEL === */}
+        <div className="table-controls">
+            <div className="show-entries">
+                <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
+            </div>
+            <div className="search-box">
+                <label>Search:</label> <input type="search" />
+            </div>
         </div>
         <div className="table-responsive-wrapper">
           <table className="riwayat-table">
@@ -180,7 +210,7 @@ const DataKeluarga = () => {
               <tr><th>#</th><th>Nama</th><th>TTL</th><th>Tgl. Kawin</th><th>Berkas</th><th>Opsi</th></tr>
             </thead>
             <tbody>
-              {dataSuamiIstri.length > 0 ? dataSuamiIstri.map((item, index) => (
+              {dataSuamiIstri.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.nama}</td>
@@ -194,7 +224,7 @@ const DataKeluarga = () => {
                     </div>
                   </td>
                 </tr>
-              )) : (<tr><td colSpan="6" className="text-center">No data</td></tr>)}
+              ))}
             </tbody>
           </table>
         </div>
@@ -204,7 +234,18 @@ const DataKeluarga = () => {
       <div className="riwayat-container">
         <div className="riwayat-header">
           <h3>Ibu & Bapak Kandung</h3>
-          <button className="add-button-icon"><FaPencilAlt /></button>
+          <button className="add-button-icon" title="Tambah Data Orang Tua" onClick={() => handleOpenModal('add-orangtua')}>
+            <FaPencilAlt />
+          </button>
+        </div>
+         {/* === PENAMBAHAN KONTROL TABEL === */}
+        <div className="table-controls">
+            <div className="show-entries">
+                <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
+            </div>
+            <div className="search-box">
+                <label>Search:</label> <input type="search" />
+            </div>
         </div>
         <div className="table-responsive-wrapper">
           <table className="riwayat-table">
@@ -212,7 +253,7 @@ const DataKeluarga = () => {
               <tr><th>#</th><th>Nama</th><th>Status</th><th>TTL</th><th>Alamat</th><th>Berkas</th><th>Opsi</th></tr>
             </thead>
             <tbody>
-              {dataOrangTua.length > 0 ? dataOrangTua.map((item, index) => (
+              {dataOrangTua.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.nama}</td>
@@ -227,7 +268,7 @@ const DataKeluarga = () => {
                     </div>
                   </td>
                 </tr>
-              )) : (<tr><td colSpan="7" className="text-center">No data</td></tr>)}
+              ))}
             </tbody>
           </table>
         </div>
@@ -237,7 +278,18 @@ const DataKeluarga = () => {
       <div className="riwayat-container">
         <div className="riwayat-header">
           <h3>Anak</h3>
-          <button className="add-button-icon"><FaPencilAlt /></button>
+          <button className="add-button-icon" title="Tambah Data Anak" onClick={() => handleOpenModal('add-anak')}>
+            <FaPencilAlt />
+          </button>
+        </div>
+         {/* === PENAMBAHAN KONTROL TABEL === */}
+        <div className="table-controls">
+            <div className="show-entries">
+                <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
+            </div>
+            <div className="search-box">
+                <label>Search:</label> <input type="search" />
+            </div>
         </div>
         <div className="table-responsive-wrapper">
           <table className="riwayat-table">
@@ -245,7 +297,7 @@ const DataKeluarga = () => {
               <tr><th>#</th><th>Nama</th><th>TTL</th><th>Pendidikan</th><th>Berkas</th><th>Opsi</th></tr>
             </thead>
             <tbody>
-              {dataAnak.length > 0 ? dataAnak.map((item, index) => (
+              {dataAnak.map((item, index) => (
                 <tr key={item.id}>
                   <td>{index + 1}</td>
                   <td>{item.nama}</td>
@@ -259,7 +311,7 @@ const DataKeluarga = () => {
                     </div>
                   </td>
                 </tr>
-              )) : (<tr><td colSpan="6" className="text-center">No data</td></tr>)}
+              ))}
             </tbody>
           </table>
         </div>

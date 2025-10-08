@@ -1,21 +1,30 @@
-// src/components/DataKGB/DataKGB.jsx (Diperbarui dengan Fitur Modal)
+// src/pages/profile/DataKGB.jsx (Final dengan semua elemen UI)
 
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { allDataKGB } from '../../_mock';
-import Modal from '../../components/Modal'; // 1. Impor komponen Modal
+import Modal from '../../components/Modal';
 
 const DataKGB = () => {
-  // 2. State untuk mengontrol modal
+  // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
+  const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
 
-  // 3. Handlers untuk membuka dan menutup modal
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type === 'edit') {
+      setSelectedData(data);
+      setFormData(data);
+    } else if (type === 'add') {
+      setSelectedData(null);
+      setFormData({ noSk: '', tglSk: '', tmtKgb: '', gajiPokok: '', masaKerja: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -23,19 +32,25 @@ const DataKGB = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null);
   };
 
-  // 4. Handlers untuk menyimpan perubahan dan menghapus (simulasi)
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSaveChanges = (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
-    if (file) {
-      alert(`Berkas SK "${file.name}" siap diupload! (cek konsol)`);
-      console.log("File baru:", file);
-    } else {
-      alert("Data KGB disimpan tanpa mengubah berkas! (cek konsol)");
+    
+    if (modalType === 'add') {
+      alert(`Data KGB baru dengan No. SK "${formData.noSk}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data KGB dengan No. SK "${formData.noSk}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    console.log("Menyimpan data KGB:", selectedData);
     handleCloseModal();
   };
 
@@ -45,30 +60,36 @@ const DataKGB = () => {
     handleCloseModal();
   };
 
-  // 5. Fungsi untuk merender konten modal secara dinamis
+  // --- DYNAMIC CONTENT RENDERING ---
+  const getModalTitle = () => {
+    if (modalType === 'edit') return 'Edit Data KGB';
+    if (modalType === 'add') return 'Tambah Data KGB';
+    return 'Konfirmasi Hapus';
+  };
+  
   const renderModalContent = () => {
-    if (modalType === 'edit' && selectedData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label htmlFor="noSk">No. SK</label>
-            <input type="text" id="noSk" defaultValue={selectedData.noSk} />
+            <input type="text" id="noSk" name="noSk" value={formData.noSk || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tglSk">Tgl. SK</label>
-            <input type="text" id="tglSk" defaultValue={selectedData.tglSk} />
+            <input type="text" id="tglSk" name="tglSk" value={formData.tglSk || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tmtKgb">TMT. KGB</label>
-            <input type="text" id="tmtKgb" defaultValue={selectedData.tmtKgb} />
+            <input type="text" id="tmtKgb" name="tmtKgb" value={formData.tmtKgb || ''} onChange={handleInputChange} />
           </div>
-           <div className="modal-form-group">
+          <div className="modal-form-group">
             <label htmlFor="gajiPokok">Gaji Pokok</label>
-            <input type="text" id="gajiPokok" defaultValue={selectedData.gajiPokok} />
+            <input type="text" id="gajiPokok" name="gajiPokok" value={formData.gajiPokok || ''} onChange={handleInputChange} />
           </div>
-           <div className="modal-form-group">
+          <div className="modal-form-group">
             <label htmlFor="masaKerja">Masa Kerja</label>
-            <input type="text" id="masaKerja" defaultValue={selectedData.masaKerja} />
+            <input type="text" id="masaKerja" name="masaKerja" value={formData.masaKerja || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="berkas">Upload Berkas SK (Opsional)</label>
@@ -76,7 +97,7 @@ const DataKGB = () => {
           </div>
           <div className="modal-form-actions">
             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
           </div>
         </form>
       );
@@ -105,12 +126,12 @@ const DataKGB = () => {
           <h3>Riwayat KGB</h3>
           <p className="subtitle">Informasi riwayat KGB selama bekerja.</p>
         </div>
-        <button className="add-button-icon">
+        <button className="add-button-icon" title="Tambah Data KGB" onClick={() => handleOpenModal('add')}>
           <FaPencilAlt />
         </button>
       </div>
 
-      {/* --- KONTROL TABEL --- */}
+      {/* --- KONTROL TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-controls">
         <div className="show-entries">
           <label htmlFor="entries">Show</label>
@@ -158,7 +179,6 @@ const DataKGB = () => {
                 </td>
                 <td>
                   <div className="action-buttons">
-                     {/* 6. Tambahkan onClick untuk membuka modal */}
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
                     <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
                   </div>
@@ -169,7 +189,7 @@ const DataKGB = () => {
         </table>
       </div>
       
-      {/* --- FOOTER TABEL --- */}
+      {/* --- FOOTER TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-footer">
         <span>Showing 1 to {allDataKGB.length} of {allDataKGB.length} entries</span>
         <div className="pagination">
@@ -179,11 +199,11 @@ const DataKGB = () => {
         </div>
       </div>
 
-      {/* 7. Render komponen Modal di sini */}
+      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        title={modalType === 'edit' ? 'Edit Data KGB' : 'Konfirmasi Hapus'}
+        title={getModalTitle()}
       >
         {renderModalContent()}
       </Modal>

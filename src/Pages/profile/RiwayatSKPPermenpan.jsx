@@ -1,21 +1,30 @@
-// src/pages/profile/RiwayatSKPPermenpan.jsx (Kode Lengkap dengan Modal)
+// src/pages/profile/RiwayatSKPPermenpan.jsx (Final dengan Fitur Tambah & Edit)
 
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
-import { allRiwayatSKPPermenpan } from '../../_mock'; // 1. Impor data baru
-import Modal from '../../components/Modal'; // 2. Impor komponen Modal
+import { allRiwayatSKPPermenpan } from '../../_mock';
+import Modal from '../../components/Modal';
 
 const RiwayatSKPPermenpan = () => {
-  // 3. State untuk mengontrol modal
+  // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
+  const [formData, setFormData] = useState(null); // State untuk data form
   const fileInputRef = useRef(null);
 
-  // 4. Handlers untuk modal
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type === 'edit') {
+      setSelectedData(data);
+      setFormData(data);
+    } else if (type === 'add') {
+      setSelectedData(null);
+      setFormData({ tahun: '', predikatKinerja: '', hasilEvaluasi: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -23,18 +32,25 @@ const RiwayatSKPPermenpan = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSaveChanges = (e) => {
     e.preventDefault();
     const file = fileInputRef.current?.files[0];
-    if (file) {
-      alert(`Berkas SKP Permenpan "${file.name}" siap diupload! (cek konsol)`);
-      console.log("File baru:", file);
-    } else {
-      alert("Data SKP Permenpan disimpan tanpa mengubah berkas! (cek konsol)");
+    
+    if (modalType === 'add') {
+      alert(`Data SKP Permenpan baru untuk tahun "${formData.tahun}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data SKP Permenpan untuk tahun "${formData.tahun}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    console.log("Menyimpan data:", selectedData);
     handleCloseModal();
   };
 
@@ -44,22 +60,28 @@ const RiwayatSKPPermenpan = () => {
     handleCloseModal();
   };
 
-  // 5. Fungsi untuk merender konten modal
+  // --- DYNAMIC CONTENT RENDERING ---
+  const getModalTitle = () => {
+    if (modalType === 'edit') return 'Edit Riwayat SKP Permenpan';
+    if (modalType === 'add') return 'Tambah Riwayat SKP Permenpan';
+    return 'Konfirmasi Hapus';
+  };
+  
   const renderModalContent = () => {
-    if (modalType === 'edit' && selectedData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label htmlFor="tahun">Tahun</label>
-            <input type="number" id="tahun" defaultValue={selectedData.tahun} />
+            <input type="number" id="tahun" name="tahun" value={formData.tahun || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label htmlFor="predikatKinerja">Predikat Kinerja</label>
-            <input type="text" id="predikatKinerja" defaultValue={selectedData.predikatKinerja} />
+            <input type="text" id="predikatKinerja" name="predikatKinerja" value={formData.predikatKinerja || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="hasilEvaluasi">Hasil Evaluasi</label>
-            <input type="text" id="hasilEvaluasi" defaultValue={selectedData.hasilEvaluasi} />
+            <input type="text" id="hasilEvaluasi" name="hasilEvaluasi" value={formData.hasilEvaluasi || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="berkas">Upload Berkas SKP (Opsional)</label>
@@ -67,7 +89,7 @@ const RiwayatSKPPermenpan = () => {
           </div>
           <div className="modal-form-actions">
             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
           </div>
         </form>
       );
@@ -96,7 +118,7 @@ const RiwayatSKPPermenpan = () => {
           <h3>Riwayat SKP Permenpan</h3>
           <p className="subtitle">Informasi riwayat SKP berdasarkan Permenpan.</p>
         </div>
-        <button className="add-button-icon" title="Tambah Data">
+        <button className="add-button-icon" title="Tambah Data" onClick={() => handleOpenModal('add')}>
           <FaPencilAlt />
         </button>
       </div>
@@ -128,31 +150,25 @@ const RiwayatSKPPermenpan = () => {
             </tr>
           </thead>
           <tbody>
-            {allRiwayatSKPPermenpan.length > 0 ? (
-              allRiwayatSKPPermenpan.map((item, index) => (
-                <tr key={item.id}>
-                  <td>{index + 1}</td>
-                  <td>{item.tahun}</td>
-                  <td>{item.predikatKinerja}</td>
-                  <td>{item.hasilEvaluasi}</td>
-                  <td>
-                    <a href={item.berkasUrl} className="download-button" target="_blank" rel="noopener noreferrer">
-                      Download
-                    </a>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
-                      <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center' }}>No data available in table</td>
+            {allRiwayatSKPPermenpan.map((item, index) => (
+              <tr key={item.id}>
+                <td>{index + 1}</td>
+                <td>{item.tahun}</td>
+                <td>{item.predikatKinerja}</td>
+                <td>{item.hasilEvaluasi}</td>
+                <td>
+                  <a href={item.berkasUrl} className="download-button" target="_blank" rel="noopener noreferrer">
+                    Download
+                  </a>
+                </td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
+                    <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
+                  </div>
+                </td>
               </tr>
-            )}
+            ))}
           </tbody>
         </table>
       </div>
@@ -171,7 +187,7 @@ const RiwayatSKPPermenpan = () => {
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        title={modalType === 'edit' ? 'Edit Riwayat SKP Permenpan' : 'Konfirmasi Hapus'}
+        title={getModalTitle()}
       >
         {renderModalContent()}
       </Modal>

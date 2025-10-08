@@ -1,21 +1,30 @@
-// src/pages/profile/RiwayatJabatan.jsx (Diperbarui dengan Fitur Upload)
+// src/pages/profile/RiwayatJabatan.jsx (Final dengan semua elemen UI)
 
-import React, { useState, useRef } from 'react'; // 1. Impor useState dan useRef
+import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaSync, FaTrash } from 'react-icons/fa';
 import { allRiwayatJabatan } from '../../_mock';
 import Modal from '../../components/Modal';
 
 const RiwayatJabatan = () => {
+  // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
-  
-  // 2. Gunakan useRef untuk mengakses file input
+  const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
 
-  const handleOpenModal = (type, data) => {
+  // --- MODAL HANDLERS ---
+  const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedData(data);
+    if (type === 'edit') {
+      setSelectedData(data);
+      setFormData(data);
+    } else if (type === 'add') {
+      setSelectedData(null);
+      setFormData({ namaJabatan: '', noSk: '', tglSk: '', tmtJabatan: '' });
+    } else { // 'delete'
+      setSelectedData(data);
+    }
     setIsModalOpen(true);
   };
 
@@ -23,74 +32,72 @@ const RiwayatJabatan = () => {
     setIsModalOpen(false);
     setModalType('');
     setSelectedData(null);
+    setFormData(null);
   };
-  
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSaveChanges = (e) => {
     e.preventDefault();
+    const file = fileInputRef.current?.files[0];
     
-    // Mengambil file yang dipilih dari input
-    const file = fileInputRef.current.files[0];
-    
-    // Di aplikasi nyata, Anda akan handle file ini (misal, upload ke server)
-    if (file) {
-      console.log("File yang diupload:", file.name, file.size, "bytes");
-      alert(`Berkas "${file.name}" siap diupload! (cek konsol)`);
-    } else {
-      console.log("Tidak ada file baru yang dipilih.");
-      alert("Perubahan disimpan (tanpa mengubah berkas)! (cek konsol)");
+    if (modalType === 'add') {
+      alert(`Data jabatan baru "${formData.namaJabatan}" berhasil ditambahkan! (cek konsol)`);
+      console.log("Menambahkan data baru:", { ...formData, file });
+    } else { // 'edit'
+      alert(`Data jabatan "${formData.namaJabatan}" berhasil diperbarui! (cek konsol)`);
+      console.log("Memperbarui data:", { ...formData, file });
     }
-    
-    // Lanjutkan logika penyimpanan data lainnya...
-    console.log("Menyimpan perubahan untuk:", selectedData.id);
-    handleCloseModal();
-  };
-  
-  const handleDelete = () => {
-    console.log("Menghapus data:", selectedData.id);
-    alert("Data dihapus! (cek konsol)");
     handleCloseModal();
   };
 
+  const handleDelete = () => {
+    alert(`Data jabatan "${selectedData.namaJabatan}" telah dihapus! (cek konsol)`);
+    console.log("Menghapus data:", selectedData);
+    handleCloseModal();
+  };
+
+  // --- DYNAMIC CONTENT RENDERING ---
+  const getModalTitle = () => {
+    if (modalType === 'edit') return 'Edit Riwayat Jabatan';
+    if (modalType === 'add') return 'Tambah Riwayat Jabatan';
+    return 'Konfirmasi Hapus';
+  };
+  
   const renderModalContent = () => {
-    if (modalType === 'edit' && selectedData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label htmlFor="namaJabatan">Nama Jabatan</label>
-            <input type="text" id="namaJabatan" defaultValue={selectedData.namaJabatan} />
+            <input type="text" id="namaJabatan" name="namaJabatan" value={formData.namaJabatan || ''} onChange={handleInputChange} required />
           </div>
           <div className="modal-form-group">
             <label htmlFor="noSk">No. SK</label>
-            <input type="text" id="noSk" defaultValue={selectedData.noSk} />
+            <input type="text" id="noSk" name="noSk" value={formData.noSk || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tglSk">Tgl. SK</label>
-            <input type="text" id="tglSk" defaultValue={selectedData.tglSk} />
+            <input type="text" id="tglSk" name="tglSk" value={formData.tglSk || ''} onChange={handleInputChange} />
           </div>
           <div className="modal-form-group">
             <label htmlFor="tmtJabatan">TMT. Jabatan</label>
-            <input type="text" id="tmtJabatan" defaultValue={selectedData.tmtJabatan} />
+            <input type="text" id="tmtJabatan" name="tmtJabatan" value={formData.tmtJabatan || ''} onChange={handleInputChange} />
           </div>
-          
-          {/* --- 3. TAMBAHKAN INPUT FILE DI SINI --- */}
           <div className="modal-form-group">
             <label htmlFor="berkas">Upload Berkas SK (Opsional)</label>
-            {/* Menampilkan nama berkas yang sudah ada (jika ada) */}
             <p className="current-file-info">
-              Berkas saat ini: <a href={selectedData.berkasUrl} target="_blank" rel="noopener noreferrer">Lihat Berkas</a>
+              Berkas saat ini: {modalType === 'edit' && selectedData.berkasUrl !== '#' ? <a href={selectedData.berkasUrl} target="_blank" rel="noopener noreferrer">Lihat Berkas</a> : 'Tidak ada'}
             </p>
-            <input 
-              type="file" 
-              id="berkas" 
-              ref={fileInputRef} // Hubungkan ref ke input ini
-              accept=".pdf,.jpg,.jpeg,.png" // Batasi tipe file yang bisa diupload
-            />
+            <input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" />
             <small className="form-text">Pilih berkas baru untuk menggantikan yang lama.</small>
           </div>
-          
           <div className="modal-form-actions">
             <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan Perubahan</button>
+            <button type="submit" className="btn btn-primary">Simpan</button>
           </div>
         </form>
       );
@@ -113,18 +120,35 @@ const RiwayatJabatan = () => {
 
   return (
     <div className="riwayat-container">
-      {/* Konten lainnya (header, tabel) tidak berubah */}
-      
+      {/* --- HEADER --- */}
       <div className="riwayat-header">
         <div>
           <h3>Riwayat Jabatan</h3>
           <p className="subtitle">Informasi riwayat jabatan selama bekerja.</p>
         </div>
-        <button className="add-button-icon">
+        <button className="add-button-icon" title="Tambah Riwayat Jabatan" onClick={() => handleOpenModal('add')}>
           <FaPencilAlt />
         </button>
       </div>
 
+      {/* --- KONTROL TABEL (UTUH TIDAK DIHILANGKAN) --- */}
+      <div className="table-controls">
+        <div className="show-entries">
+          <label htmlFor="entries">Show</label>
+          <select name="entries" id="entries">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <span>entries</span>
+        </div>
+        <div className="search-box">
+          <label htmlFor="search">Search:</label>
+          <input type="search" id="search" />
+        </div>
+      </div>
+
+      {/* --- TABEL DATA --- */}
       <div className="table-responsive-wrapper">
         <table className="riwayat-table">
           <thead>
@@ -155,10 +179,10 @@ const RiwayatJabatan = () => {
                   <div className="action-buttons">
                     <button className="action-btn refresh" title="Refresh"><FaSync /></button>
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}>
-                        <FaPencilAlt />
+                      <FaPencilAlt />
                     </button>
                     <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}>
-                        <FaTrash />
+                      <FaTrash />
                     </button>
                   </div>
                 </td>
@@ -168,10 +192,21 @@ const RiwayatJabatan = () => {
         </table>
       </div>
 
+      {/* --- FOOTER TABEL (UTUH TIDAK DIHILANGKAN) --- */}
+      <div className="table-footer">
+        <span>Showing 1 to {allRiwayatJabatan.length} of {allRiwayatJabatan.length} entries</span>
+        <div className="pagination">
+          <button>Previous</button>
+          <button className="active">1</button>
+          <button>Next</button>
+        </div>
+      </div>
+
+      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        title={modalType === 'edit' ? 'Edit Riwayat Jabatan' : 'Konfirmasi Hapus'}
+        title={getModalTitle()}
       >
         {renderModalContent()}
       </Modal>
