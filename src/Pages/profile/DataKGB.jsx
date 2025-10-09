@@ -1,17 +1,19 @@
-// src/pages/profile/DataKGB.jsx (Final dengan semua elemen UI)
-
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
-import { allDataKGB } from '../../_mock';
+import { useOutletContext } from 'react-router-dom';
 import Modal from '../../components/Modal';
 
-const DataKGB = () => {
+const DataKGB = ({ data: propData }) => {
   // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
+
+  // --- LOGIKA PENGAMBILAN DATA FLEKSIBEL ---
+  const context = useOutletContext();
+  const data = propData || context?.riwayat?.kgb || [];
 
   // --- MODAL HANDLERS ---
   const handleOpenModal = (type, data = null) => {
@@ -45,17 +47,17 @@ const DataKGB = () => {
     const file = fileInputRef.current?.files[0];
     
     if (modalType === 'add') {
-      alert(`Data KGB baru dengan No. SK "${formData.noSk}" berhasil ditambahkan! (cek konsol)`);
+      alert(`Data KGB baru dengan No. SK "${formData.noSk}" berhasil ditambahkan!`);
       console.log("Menambahkan data baru:", { ...formData, file });
     } else { // 'edit'
-      alert(`Data KGB dengan No. SK "${formData.noSk}" berhasil diperbarui! (cek konsol)`);
+      alert(`Data KGB dengan No. SK "${formData.noSk}" berhasil diperbarui!`);
       console.log("Memperbarui data:", { ...formData, file });
     }
     handleCloseModal();
   };
 
   const handleDelete = () => {
-    alert(`Data KGB dengan No. SK "${selectedData.noSk}" telah dihapus! (cek konsol)`);
+    alert(`Data KGB dengan No. SK "${selectedData.noSk}" telah dihapus!`);
     console.log("Menghapus data KGB:", selectedData);
     handleCloseModal();
   };
@@ -120,7 +122,6 @@ const DataKGB = () => {
 
   return (
     <div className="riwayat-container">
-      {/* --- HEADER --- */}
       <div className="riwayat-header">
         <div>
           <h3>Riwayat KGB</h3>
@@ -131,24 +132,15 @@ const DataKGB = () => {
         </button>
       </div>
 
-      {/* --- KONTROL TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-controls">
         <div className="show-entries">
-          <label htmlFor="entries">Show</label>
-          <select name="entries" id="entries">
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-          </select>
-          <span>entries</span>
+          <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
         </div>
         <div className="search-box">
-          <label htmlFor="search">Search:</label>
-          <input type="search" id="search" />
+          <label>Search:</label> <input type="search" />
         </div>
       </div>
 
-      {/* --- TABEL DATA --- */}
       <div className="table-responsive-wrapper">
         <table className="riwayat-table">
           <thead>
@@ -164,7 +156,7 @@ const DataKGB = () => {
             </tr>
           </thead>
           <tbody>
-            {allDataKGB.map((item, index) => (
+            {data.map((item, index) => (
               <tr key={item.id}>
                 <td>{index + 1}</td>
                 <td>{item.noSk}</td>
@@ -189,9 +181,8 @@ const DataKGB = () => {
         </table>
       </div>
       
-      {/* --- FOOTER TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-footer">
-        <span>Showing 1 to {allDataKGB.length} of {allDataKGB.length} entries</span>
+        <span>Showing 1 to {data.length} of {data.length} entries</span>
         <div className="pagination">
           <button>Previous</button>
           <button className="active">1</button>
@@ -199,7 +190,6 @@ const DataKGB = () => {
         </div>
       </div>
 
-      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 

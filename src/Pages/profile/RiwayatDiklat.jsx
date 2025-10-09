@@ -1,11 +1,9 @@
-// src/pages/profile/RiwayatDiklat.jsx (Final dengan semua elemen UI)
-
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
-import { allRiwayatDiklat } from '../../_mock';
+import { useOutletContext } from 'react-router-dom';
 import Modal from '../../components/Modal';
 
-const RiwayatDiklat = () => {
+const RiwayatDiklat = ({ data: propData }) => {
   // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
@@ -13,10 +11,14 @@ const RiwayatDiklat = () => {
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
 
-  // --- DATA FILTERING ---
-  const diklatStruktural = allRiwayatDiklat.filter(d => d.jenis === 'struktural');
-  const diklatFungsional = allRiwayatDiklat.filter(d => d.jenis === 'fungsional');
-  const diklatTeknis = allRiwayatDiklat.filter(d => d.jenis === 'teknis');
+  // --- LOGIKA PENGAMBILAN DATA FLEKSIBEL ---
+  const context = useOutletContext();
+  const sumberData = propData || context?.riwayat?.diklat || [];
+
+  // --- FILTER DATA ---
+  const diklatStruktural = sumberData.filter(d => d.jenis === 'struktural');
+  const diklatFungsional = sumberData.filter(d => d.jenis === 'fungsional');
+  const diklatTeknis = sumberData.filter(d => d.jenis === 'teknis');
 
   // --- MODAL HANDLERS ---
   const handleOpenModal = (type, data = null) => {
@@ -51,17 +53,17 @@ const RiwayatDiklat = () => {
     const file = fileInputRef.current?.files[0];
     
     if (modalType.startsWith('add')) {
-      alert(`Data diklat baru "${formData.namaDiklat}" berhasil ditambahkan! (cek konsol)`);
+      alert(`Data diklat baru "${formData.namaDiklat}" berhasil ditambahkan!`);
       console.log("Menambahkan data baru:", { ...formData, file });
     } else { // 'edit'
-      alert(`Data diklat "${formData.namaDiklat}" berhasil diperbarui! (cek konsol)`);
+      alert(`Data diklat "${formData.namaDiklat}" berhasil diperbarui!`);
       console.log("Memperbarui data:", { ...formData, file });
     }
     handleCloseModal();
   };
 
   const handleDelete = () => {
-    alert(`Data diklat "${selectedData.namaDiklat}" telah dihapus! (cek konsol)`);
+    alert(`Data diklat "${selectedData.namaDiklat}" telah dihapus!`);
     console.log("Menghapus data diklat:", selectedData);
     handleCloseModal();
   };
@@ -79,7 +81,7 @@ const RiwayatDiklat = () => {
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group">
             <label>Jenis Diklat</label>
-            <select name="jenis" value={formData.jenis || ''} onChange={handleInputChange} disabled={modalType.startsWith('edit-')} required>
+            <select name="jenis" value={formData.jenis || ''} onChange={handleInputChange} disabled={modalType.startsWith('add-')} required>
                 <option value="struktural">Struktural</option>
                 <option value="fungsional">Fungsional</option>
                 <option value="teknis">Teknis</option>
@@ -187,34 +189,34 @@ const RiwayatDiklat = () => {
           </button>
         </div>
         <div className="table-controls">
-            <div className="show-entries">
-                <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
-            </div>
-            <div className="search-box">
-                <label>Search:</label> <input type="search" />
-            </div>
+          <div className="show-entries">
+              <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
+          </div>
+          <div className="search-box">
+              <label>Search:</label> <input type="search" />
+          </div>
         </div>
         <div className="table-responsive-wrapper">
           <table className="riwayat-table">
             <thead>
-               <tr><th>#</th><th>Nama Diklat</th><th>Tempat</th><th>Pelaksana</th><th>Angkatan</th><th>Tanggal</th><th>Berkas</th><th>Opsi</th></tr>
+              <tr><th>#</th><th>Nama Diklat</th><th>Tempat</th><th>Pelaksana</th><th>Angkatan</th><th>Tanggal</th><th>Berkas</th><th>Opsi</th></tr>
             </thead>
             <tbody>
               {diklatFungsional.map((item, index) => (
                 <tr key={item.id}>
-                   <td>{index + 1}</td>
-                   <td>{item.namaDiklat}</td>
-                   <td>{item.tempat}</td>
-                   <td>{item.pelaksana}</td>
-                   <td>{item.angkatan}</td>
-                   <td>{item.tanggal}</td>
-                   <td><a href={item.berkasUrl} className="download-button">Download</a></td>
-                   <td>
-                     <div className="action-buttons">
-                       <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit-fungsional', item)}><FaPencilAlt /></button>
-                       <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete-fungsional', item)}><FaTrash /></button>
-                     </div>
-                   </td>
+                  <td>{index + 1}</td>
+                  <td>{item.namaDiklat}</td>
+                  <td>{item.tempat}</td>
+                  <td>{item.pelaksana}</td>
+                  <td>{item.angkatan}</td>
+                  <td>{item.tanggal}</td>
+                  <td><a href={item.berkasUrl} className="download-button">Download</a></td>
+                  <td>
+                    <div className="action-buttons">
+                      <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit-fungsional', item)}><FaPencilAlt /></button>
+                      <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete-fungsional', item)}><FaTrash /></button>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -224,24 +226,24 @@ const RiwayatDiklat = () => {
 
       {/* --- 3. TABEL DIKLAT TEKNIS --- */}
       <div className="riwayat-container">
-         <div className="riwayat-header">
+        <div className="riwayat-header">
           <h3>Riwayat Diklat Teknis</h3>
-           <button className="add-button-icon" title="Tambah Diklat Teknis" onClick={() => handleOpenModal('add-teknis')}>
-             <FaPencilAlt />
-           </button>
+          <button className="add-button-icon" title="Tambah Diklat Teknis" onClick={() => handleOpenModal('add-teknis')}>
+            <FaPencilAlt />
+          </button>
         </div>
         <div className="table-controls">
-            <div className="show-entries">
-                <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
-            </div>
-            <div className="search-box">
-                <label>Search:</label> <input type="search" />
-            </div>
+          <div className="show-entries">
+              <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
+          </div>
+          <div className="search-box">
+              <label>Search:</label> <input type="search" />
+          </div>
         </div>
         <div className="table-responsive-wrapper">
           <table className="riwayat-table">
             <thead>
-               <tr><th>#</th><th>Nama Diklat</th><th>Tempat</th><th>Pelaksana</th><th>Angkatan</th><th>Tanggal</th><th>Berkas</th><th>Opsi</th></tr>
+              <tr><th>#</th><th>Nama Diklat</th><th>Tempat</th><th>Pelaksana</th><th>Angkatan</th><th>Tanggal</th><th>Berkas</th><th>Opsi</th></tr>
             </thead>
             <tbody>
               {diklatTeknis.map((item, index) => (
@@ -266,7 +268,6 @@ const RiwayatDiklat = () => {
         </div>
       </div>
       
-      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 

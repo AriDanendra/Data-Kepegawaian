@@ -1,17 +1,19 @@
-// src/pages/profile/RiwayatCuti.jsx (Final dengan semua elemen UI)
-
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
-import { allRiwayatCuti } from '../../_mock';
+import { useOutletContext } from 'react-router-dom';
 import Modal from '../../components/Modal';
 
-const RiwayatCuti = () => {
+const RiwayatCuti = ({ data: propData }) => {
   // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
+
+  // --- LOGIKA PENGAMBILAN DATA FLEKSIBEL ---
+  const context = useOutletContext();
+  const data = propData || context?.riwayat?.cuti || [];
 
   // --- MODAL HANDLERS ---
   const handleOpenModal = (type, data = null) => {
@@ -45,17 +47,17 @@ const RiwayatCuti = () => {
     const file = fileInputRef.current?.files[0];
     
     if (modalType === 'add') {
-      alert(`Data cuti baru "${formData.jenisCuti}" berhasil ditambahkan! (cek konsol)`);
+      alert(`Data cuti baru "${formData.jenisCuti}" berhasil ditambahkan!`);
       console.log("Menambahkan data baru:", { ...formData, file });
     } else { // 'edit'
-      alert(`Data cuti "${formData.jenisCuti}" berhasil diperbarui! (cek konsol)`);
+      alert(`Data cuti "${formData.jenisCuti}" berhasil diperbarui!`);
       console.log("Memperbarui data:", { ...formData, file });
     }
     handleCloseModal();
   };
 
   const handleDelete = () => {
-    alert(`Data cuti "${selectedData.jenisCuti}" dengan No. Surat "${selectedData.nomorSurat}" telah dihapus! (cek konsol)`);
+    alert(`Data cuti "${selectedData.jenisCuti}" dengan No. Surat "${selectedData.nomorSurat}" telah dihapus!`);
     console.log("Menghapus data cuti:", selectedData);
     handleCloseModal();
   };
@@ -120,7 +122,6 @@ const RiwayatCuti = () => {
 
   return (
     <div className="riwayat-container">
-      {/* --- HEADER --- */}
       <div className="riwayat-header">
         <div>
           <h3>Riwayat Cuti</h3>
@@ -131,24 +132,15 @@ const RiwayatCuti = () => {
         </button>
       </div>
 
-      {/* --- KONTROL TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-controls">
         <div className="show-entries">
-          <label htmlFor="entries">Show</label>
-          <select name="entries" id="entries">
-            <option value="10">10</option>
-            <option value="25">25</option>
-            <option value="50">50</option>
-          </select>
-          <span>entries</span>
+          <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
         </div>
         <div className="search-box">
-          <label htmlFor="search">Search:</label>
-          <input type="search" id="search" />
+          <label>Search:</label> <input type="search" />
         </div>
       </div>
 
-      {/* --- TABEL DATA --- */}
       <div className="table-responsive-wrapper">
         <table className="riwayat-table">
           <thead>
@@ -164,7 +156,7 @@ const RiwayatCuti = () => {
             </tr>
           </thead>
           <tbody>
-            {allRiwayatCuti.map((item, index) => (
+            {data.map((item, index) => (
               <tr key={item.id}>
                 <td>{index + 1}</td>
                 <td>{item.jenisCuti}</td>
@@ -189,9 +181,8 @@ const RiwayatCuti = () => {
         </table>
       </div>
       
-      {/* --- FOOTER TABEL (UTUH TIDAK DIHILANGKAN) --- */}
       <div className="table-footer">
-        <span>Showing 1 to {allRiwayatCuti.length} of {allRiwayatCuti.length} entries</span>
+        <span>Showing 1 to {data.length} of {data.length} entries</span>
         <div className="pagination">
           <button>Previous</button>
           <button className="active">1</button>
@@ -199,7 +190,6 @@ const RiwayatCuti = () => {
         </div>
       </div>
 
-      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 

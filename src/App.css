@@ -64,6 +64,49 @@ body {
   font-weight: 500;
 }
 
+/* Kontainer header yang menampung tombol kembali */
+.page-header-with-back {
+  display: flex;          /* Mengaktifkan flexbox untuk penataan */
+  align-items: center;    /* Menyelaraskan item secara vertikal di tengah */
+  margin-bottom: 1.5rem;  /* Memberi jarak bawah dari konten utama */
+  padding-bottom: 1rem;   /* Memberi jarak dalam di bagian bawah */
+  border-bottom: 1px solid var(--border-color); /* Garis bawah sebagai pemisah */
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem; /* Sedikit lebih lebar jaraknya */
+  padding: 0.6rem 1.2rem; /* Dibuat sedikit lebih besar */
+  
+  /* --- Perubahan Utama --- */
+  background-color: var(--accent-color); /* Latar belakang solid oranye */
+  color: white;                          /* Warna teks putih agar kontras */
+  border: none;                          /* Hapus border karena sudah solid */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15); /* Tambah bayangan agar menonjol */
+  /* ---------------------- */
+  
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600; /* Dibuat sedikit lebih tebal */
+  
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Efek saat cursor diarahkan ke tombol */
+.back-button:hover {
+  background-color: #e67e22; /* Warna oranye yang sedikit lebih gelap */
+  transform: translateY(-2px); /* Efek sedikit terangkat */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Bayangan lebih jelas saat hover */
+}
+
+/* Menyesuaikan span di dalam tombol */
+.back-button span {
+  line-height: 1; /* Memastikan teks tidak memiliki spasi baris tambahan */
+}
+
 /* --- 4. Sidebar --- */
 .sidebar {
   display: flex;
@@ -444,6 +487,7 @@ body {
 .action-btn.refresh { background-color: #28a745; }
 .action-btn.edit { background-color: #007bff; }
 .action-btn.delete { background-color: #dc3545; }
+.action-btn.view {background-color:#28a745;}
 
 .table-footer {
   display: flex;
@@ -593,3 +637,165 @@ body {
   margin-bottom: 2rem; /* Memberi jarak bawah antar tabel */
 }
 
+/* --- 11. Daftar Pegawai (Card View) Specifics --- */
+
+/* Pengaturan Grid untuk Daftar Pegawai */
+.pegawai-card-grid {
+    display: grid;
+    /* Responsive Grid: 3 kolom di desktop, minimum 300px per card */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 1.5rem; /* Menggunakan gap yang konsisten dengan ProfilePage */
+    margin-bottom: 1.5rem;
+}
+
+/* Card Pegawai Individu */
+.pegawai-item-card {
+    /* Menggunakan profile-content-card sebagai basis, override padding */
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Card (Foto dan Nama) */
+.pegawai-card-header {
+    display: flex;
+    align-items: center;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.pegawai-foto-card {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    /* Menggunakan accent-color sebagai border foto */
+    border: 3px solid var(--accent-color); 
+}
+
+.pegawai-details {
+    overflow: hidden;
+}
+
+.pegawai-details .employee-name {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.pegawai-nip-card {
+    font-size: 0.85em;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+.pegawai-nip-card .icon-detail {
+    margin-right: 5px;
+    color: var(--text-secondary);
+}
+
+/* Body Card (Detail Informasi) */
+.pegawai-card-body {
+    flex-grow: 1;
+    margin-bottom: 15px;
+}
+
+.pegawai-card-body .detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+
+/* Merapikan label */
+.pegawai-card-body .detail-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    min-width: 90px; 
+    margin-right: 5px;
+}
+
+.pegawai-card-body .detail-value {
+    color: var(--text-primary);
+    flex-grow: 1;
+}
+
+.pegawai-card-body .icon-detail.accent {
+    margin-right: 8px;
+    color: var(--accent-color); /* Ikon detail menggunakan warna oranye */
+    min-width: 15px;
+}
+
+/* Tombol Aksi di Card */
+.card-action-buttons {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 15px;
+    margin-top: auto; /* Memastikan tombol selalu di bawah */
+    border-top: 1px solid var(--border-color);
+    gap: 8px;
+}
+
+.card-action-buttons .action-btn {
+    flex: 1;
+    padding: 8px 5px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 500;
+    /* Override action-buttons di Riwayat Pages */
+    height: auto; 
+    flex-direction: row; 
+    gap: 4px;
+}
+
+/* Penyesuaian Warna Tombol */
+.card-action-buttons .action-btn.view { 
+    background-color: #007bff; /* Biru untuk Detail (Lihat) */
+}
+.card-action-buttons .action-btn.view:hover { background-color: #0056b3; }
+
+.card-action-buttons .action-btn.edit {
+    background-color: #ffc107; /* Kuning untuk Edit */
+    color: var(--text-primary);
+}
+.card-action-buttons .action-btn.edit:hover { background-color: #e0a800; }
+
+.card-action-buttons .action-btn.delete {
+    background-color: #dc3545; /* Merah untuk Hapus */
+}
+.card-action-buttons .action-btn.delete:hover { background-color: #c82333; }
+
+/* Tombol Tambah Pegawai (Override Riwayat Action) */
+.btn-tambah-pegawai {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    transition: background-color 0.2s;
+}
+.btn-tambah-pegawai:hover {
+    background-color: #e67e22; /* Warna oranye yang sedikit lebih gelap */
+}
+
+/* Media Query untuk Mobile */
+@media (max-width: 768px) {
+    .pegawai-card-grid {
+        grid-template-columns: 1fr; /* Satu card per baris di mobile */
+    }
+
+    .card-action-buttons {
+        flex-wrap: wrap; 
+    }
+
+    .card-action-buttons .action-btn {
+        flex: 1 1 100%; /* Satu tombol per baris di mobile */
+    }
+    
+    .btn-tambah-pegawai {
+        font-size: 0.9rem;
+    }
+}

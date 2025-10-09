@@ -1,11 +1,9 @@
-// src/pages/profile/DataKeluarga.jsx (Final dengan Kontrol Tabel di setiap bagian)
-
 import React, { useState, useRef } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
-import { allDataKeluarga } from '../../_mock';
+import { useOutletContext } from 'react-router-dom';
 import Modal from '../../components/Modal';
 
-const DataKeluarga = () => {
+const DataKeluarga = ({ data: propData }) => {
   // --- STATE MANAGEMENT ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
@@ -13,12 +11,16 @@ const DataKeluarga = () => {
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
 
-  // --- DATA FILTERING ---
-  const dataSuamiIstri = allDataKeluarga.filter(d => d.kategori === 'pasangan');
-  const dataOrangTua = allDataKeluarga.filter(d => d.kategori === 'orangtua');
-  const dataAnak = allDataKeluarga.filter(d => d.kategori === 'anak');
+  // --- LOGIKA PENGAMBILAN DATA FLEKSIBEL ---
+  const context = useOutletContext();
+  const sumberData = propData || context?.riwayat?.keluarga || [];
 
-  // --- MODAL HANDLERS (Tidak ada perubahan) ---
+  // --- FILTER DATA ---
+  const dataSuamiIstri = sumberData.filter(d => d.kategori === 'pasangan');
+  const dataOrangTua = sumberData.filter(d => d.kategori === 'orangtua');
+  const dataAnak = sumberData.filter(d => d.kategori === 'anak');
+
+  // --- MODAL HANDLERS ---
   const handleOpenModal = (type, data = null) => {
     setModalType(type);
     if (type.startsWith('edit')) {
@@ -52,22 +54,22 @@ const DataKeluarga = () => {
     const file = fileInputRef.current?.files[0];
     
     if (modalType.startsWith('add')) {
-      alert(`Data baru "${formData.nama}" berhasil ditambahkan! (cek konsol)`);
+      alert(`Data baru "${formData.nama}" berhasil ditambahkan!`);
       console.log("Menambahkan data baru:", { ...formData, file });
     } else { // 'edit'
-      alert(`Data untuk "${formData.nama}" berhasil diperbarui! (cek konsol)`);
+      alert(`Data untuk "${formData.nama}" berhasil diperbarui!`);
       console.log("Memperbarui data:", { ...formData, file });
     }
     handleCloseModal();
   };
 
   const handleDelete = () => {
-    alert(`Data untuk "${selectedData.nama}" telah dihapus! (cek konsol)`);
+    alert(`Data untuk "${selectedData.nama}" telah dihapus!`);
     console.log("Menghapus data:", selectedData);
     handleCloseModal();
   };
   
-  // --- DYNAMIC CONTENT RENDERING (Tidak ada perubahan) ---
+  // --- DYNAMIC CONTENT RENDERING ---
   const getModalTitle = () => {
     if (modalType.startsWith('edit')) return 'Edit Data Keluarga';
     if (modalType.startsWith('add')) return 'Tambah Data Keluarga';
@@ -76,12 +78,12 @@ const DataKeluarga = () => {
   };
 
   const renderModalContent = () => {
-    if (!formData && (modalType.startsWith('edit') || modalType.startsWith('add'))) return null;
+    if (!formData && !selectedData) return null;
 
-    if (modalType.includes('pasangan')) {
+    // Form untuk Tambah/Edit Pasangan
+    if (modalType.includes('pasangan') && modalType.startsWith('add') || modalType.startsWith('edit')) {
       return (
         <form onSubmit={handleSaveChanges}>
-          {/* ... isi form pasangan ... */}
           <div className="modal-form-group">
             <label>Nama Suami / Istri</label>
             <input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
@@ -106,10 +108,10 @@ const DataKeluarga = () => {
       );
     }
     
-    if (modalType.includes('orangtua')) {
+    // Form untuk Tambah/Edit Orang Tua
+    if (modalType.includes('orangtua') && modalType.startsWith('add') || modalType.startsWith('edit')) {
       return (
         <form onSubmit={handleSaveChanges}>
-          {/* ... isi form orang tua ... */}
           <div className="modal-form-group">
             <label>Status</label>
             <select name="status" value={formData.status || ''} onChange={handleInputChange} required>
@@ -142,10 +144,10 @@ const DataKeluarga = () => {
       );
     }
 
-    if (modalType.includes('anak')) {
+    // Form untuk Tambah/Edit Anak
+    if (modalType.includes('anak') && modalType.startsWith('add') || modalType.startsWith('edit')) {
       return (
         <form onSubmit={handleSaveChanges}>
-          {/* ... isi form anak ... */}
           <div className="modal-form-group">
             <label>Nama Anak</label>
             <input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
@@ -170,6 +172,7 @@ const DataKeluarga = () => {
       );
     }
 
+    // Modal Konfirmasi Hapus
     if (modalType.startsWith('delete-') && selectedData) {
       return (
         <div>
@@ -195,7 +198,6 @@ const DataKeluarga = () => {
                 <FaPencilAlt />
             </button>
         </div>
-        {/* === PENAMBAHAN KONTROL TABEL === */}
         <div className="table-controls">
             <div className="show-entries">
                 <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
@@ -238,14 +240,8 @@ const DataKeluarga = () => {
             <FaPencilAlt />
           </button>
         </div>
-         {/* === PENAMBAHAN KONTROL TABEL === */}
         <div className="table-controls">
-            <div className="show-entries">
-                <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
-            </div>
-            <div className="search-box">
-                <label>Search:</label> <input type="search" />
-            </div>
+            {/* ... */}
         </div>
         <div className="table-responsive-wrapper">
           <table className="riwayat-table">
@@ -282,14 +278,8 @@ const DataKeluarga = () => {
             <FaPencilAlt />
           </button>
         </div>
-         {/* === PENAMBAHAN KONTROL TABEL === */}
         <div className="table-controls">
-            <div className="show-entries">
-                <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
-            </div>
-            <div className="search-box">
-                <label>Search:</label> <input type="search" />
-            </div>
+            {/* ... */}
         </div>
         <div className="table-responsive-wrapper">
           <table className="riwayat-table">
@@ -317,7 +307,6 @@ const DataKeluarga = () => {
         </div>
       </div>
       
-      {/* --- RENDER MODAL --- */}
       <Modal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 

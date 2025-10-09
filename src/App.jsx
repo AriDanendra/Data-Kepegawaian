@@ -1,4 +1,4 @@
-// src/App.jsx (Kode yang Diperbaiki)
+// src/App.jsx (Kode yang Sudah Diperbaiki untuk Detail Page)
 
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
@@ -37,8 +37,11 @@ import UbahPassword from './Pages/UbahPassword';
 // Halaman Admin
 import AdminDashboard from './Pages/admin/AdminDashboard';
 import DaftarPegawai from './Pages/admin/DaftarPegawai';
+// === TAMBAHKAN IMPORT KOMPONEN HALAMAN DETAIL BARU DI SINI ===
+import PegawaiDetailPage from './Pages/admin/PegawaiDetailPage'; 
+// =============================================================
 
-// 2. Hapus 'const employeeData' dari sini
+// 2. Hapus 'const employeeData' dari sini (Sudah dihapus)
 
 const MainLayout = ({ employee }) => {
   const [isSidebarOpen, setSidebarOpen] = React.useState(window.innerWidth > 768);
@@ -60,6 +63,7 @@ const MainLayout = ({ employee }) => {
             <Outlet />
           </main>
           <footer className="footer">Tahun 2025</footer>
+          
         </div>
       </div>
     </div>
@@ -78,12 +82,13 @@ function App() {
             path="/*"
             element={
               <ProtectedRoute allowedRoles={['pegawai']}>
-                {/* 3. Gunakan 'loggedInEmployee' sebagai prop */}
+                {/* 3. Gunakan 'loggedInEmployee' sebagai prop */}
                 <MainLayout employee={loggedInEmployee} />
               </ProtectedRoute>
             }
           >
             <Route index element={<Dashboard employee={loggedInEmployee} />} />
+            {/* Riwayat Pegawai (Nested Routes) */}
             <Route path="profile" element={<ProfilePage employee={loggedInEmployee} />}>
                 <Route index element={<div style={{textAlign: 'center', padding: '2rem', color: '#6c757d'}}><p>Silakan pilih menu di atas untuk melihat detail riwayat.</p></div>} />
                 <Route path="jabatan" element={<RiwayatJabatan />} />
@@ -108,12 +113,16 @@ function App() {
             path="/admin/*"
             element={
               <ProtectedRoute allowedRoles={['admin']}>
+                {/* Untuk Admin, Sidebar tidak perlu data 'employee' kecuali untuk tampilan profil sendiri */}
                 <MainLayout />
               </ProtectedRoute>
             }
           >
             <Route index element={<AdminDashboard />} />
             <Route path="daftar-pegawai" element={<DaftarPegawai />} />
+            {/* === TAMBAHKAN ROUTE DETAIL PEGAWAI DI SINI === */}
+            <Route path="pegawai/detail/:employeeId" element={<PegawaiDetailPage />} />
+            {/* ============================================= */}
             <Route path="ubah-password" element={<UbahPassword />} />
           </Route>
           
