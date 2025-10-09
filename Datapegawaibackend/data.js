@@ -4,7 +4,7 @@
 // ==         PUSAT DATA TIRUAN (MOCK DATABASE)                   ==
 // =================================================================
 
-const allEmployees = [
+export const allEmployees = [
   {
     id: 1,
     name: 'hj tunru, S.T.',
@@ -136,9 +136,3 @@ export const adminUser = {
   role: 'admin',
   profilePictureUrl: '/assets/profile-pic.jpg',
 };
-
-// DATA PEGAWAI YANG LOGIN
-export const loggedInEmployee = allEmployees[0];
-
-// EXPORT DEFAULT
-export default allEmployees;
