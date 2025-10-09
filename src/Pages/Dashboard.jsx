@@ -1,7 +1,18 @@
-import React from 'react';
+// src/pages/Dashboard.jsx (Disesuaikan)
 
-// Komponen ini sekarang adalah halaman Dashboard
-const Dashboard = ({ employee }) => {
+import React from 'react';
+import { useAuth } from '../context/AuthContext'; // Ditambahkan: Import useAuth
+
+// Diubah: Hapus 'employee' dari props
+const Dashboard = () => {
+  // Ditambahkan: Ambil data user yang sedang login dari context
+  const { user } = useAuth();
+
+  // Ditambahkan: Pengaman jika data user belum termuat
+  if (!user) {
+    return <main className="main-content">Memuat data pengguna...</main>;
+  }
+
   return (
     <main className="main-content">
       <div className="welcome-header">
@@ -15,50 +26,48 @@ const Dashboard = ({ employee }) => {
       </div>
 
       <div className="profile-card">
-        <img src="/assets/profile-pic.jpg" alt="Foto Profil Pegawai" className="profile-picture" />
+        {/* Diubah: Gunakan user.profilePictureUrl jika ada */}
+        <img src={user.profilePictureUrl || "/assets/profile-pic.jpg"} alt="Foto Profil Pegawai" className="profile-picture" />
         <div className="profile-data">
-          <h3 className="employee-name">Selamat Datang, {employee.name.toUpperCase()}</h3>
+          {/* Diubah: Semua 'employee' diganti menjadi 'user' */}
+          <h3 className="employee-name">Selamat Datang, {user.name.toUpperCase()}</h3>
           <table>
             <tbody>
               <tr>
                 <td>NIP</td>
-                <td>: {employee.nip}</td>
+                <td>: {user.nip}</td>
               </tr>
               <tr>
                 <td>Tempat/Tgl Lahir</td>
-                <td>: {employee.ttl}</td>
+                <td>: {user.ttl}</td>
               </tr>
               <tr>
                 <td>Agama</td>
-                <td>: {employee.agama}</td>
+                <td>: {user.agama}</td>
               </tr>
               <tr>
                 <td>Suku</td>
-                <td>: {employee.suku}</td>
+                <td>: {user.suku}</td>
               </tr>
               <tr>
                 <td>Alamat</td>
-                <td>: {employee.alamat}</td>
+                <td>: {user.alamat}</td>
+              </tr>
+              <tr><td colSpan="2">&nbsp;</td></tr>
+              <tr>
+                <td colSpan="2">{user.pendidikan}</td>
               </tr>
               <tr>
-                <td colSpan="2">&nbsp;</td>
+                <td colSpan="2">{user.golongan}</td>
               </tr>
-              <tr>
-                <td colSpan="2">{employee.pendidikan}</td>
-              </tr>
-              <tr>
-                <td colSpan="2">{employee.golongan}</td>
-              </tr>
-              <tr>
-                <td colSpan="2">&nbsp;</td>
-              </tr>
+              <tr><td colSpan="2">&nbsp;</td></tr>
               <tr>
                 <td>No.Hp/Telp</td>
-                <td>: {employee.nomorHp}</td>
+                <td>: {user.nomorHp}</td>
               </tr>
               <tr>
                 <td>Email</td>
-                <td>: {employee.email}</td>
+                <td>: {user.email}</td>
               </tr>
             </tbody>
           </table>

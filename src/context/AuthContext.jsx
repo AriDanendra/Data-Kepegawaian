@@ -1,36 +1,49 @@
+// src/context/AuthContext.jsx (Diperbarui dengan fungsi updateUser)
+
 import React, { createContext, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import allEmployees, { adminUser } from '../_mock';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  // Ubah state untuk menyimpan objek user (termasuk peran/role)
   const [user, setUser] = useState(null); 
   const navigate = useNavigate();
 
   const login = (username, password) => {
-    // Logika untuk membedakan admin dan pegawai
-    if (username === 'admin' && password === 'password') {
-      setUser({ role: 'admin' }); // Simpan peran sebagai admin
-      navigate('/admin'); // Arahkan ke dashboard admin
-    } else if (username === 'pegawai' && password === 'password') {
-      setUser({ role: 'pegawai' }); // Simpan peran sebagai pegawai
-      navigate('/'); // Arahkan ke dashboard pegawai
+    if (username === adminUser.username && password === adminUser.password) {
+      setUser(adminUser);
+      navigate('/admin');
+      return;
+    }
+    const foundEmployee = allEmployees.find(emp => emp.nip.includes(username));
+    if (foundEmployee && password === foundEmployee.password) {
+      setUser({ ...foundEmployee, role: 'pegawai' });
+      navigate('/');
     } else {
       alert('Username atau Password salah!');
     }
   };
 
   const logout = () => {
-    setUser(null); // Hapus data user saat logout
+    setUser(null);
     navigate('/login');
   };
 
+  // Ditambahkan: Fungsi untuk memperbarui data user di state context
+  const updateUser = (newUserData) => {
+    setUser(prevUser => ({
+      ...prevUser,
+      ...newUserData,
+    }));
+  };
+
   const value = {
-    isAuthenticated: !!user, // Bernilai true jika ada user, false jika null
-    user, // Kirim data user (termasuk role) ke komponen lain
+    isAuthenticated: !!user,
+    user,
     login,
-    logout
+    logout,
+    updateUser, // Ditambahkan: Sertakan fungsi updateUser di dalam value context
   };
 
   return (

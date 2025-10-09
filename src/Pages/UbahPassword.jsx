@@ -1,7 +1,13 @@
+// src/pages/UbahPassword.jsx (Disesuaikan dengan AuthContext)
+
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext'; // Ditambahkan: Import useAuth
 import './UbahPassword.css';
 
 const UbahPassword = () => {
+  // Ditambahkan: Ambil data user yang sedang login dari context
+  const { user } = useAuth();
+
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -9,38 +15,47 @@ const UbahPassword = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setMessage({ type: '', text: '' }); // Reset pesan setiap kali submit
+    setMessage({ type: '', text: '' });
 
-    // --- Validasi Sederhana ---
+    // Validasi Sederhana (tetap sama)
     if (!oldPassword || !newPassword || !confirmPassword) {
       setMessage({ type: 'error', text: 'Semua kolom harus diisi.' });
       return;
     }
-
     if (newPassword.length < 8) {
       setMessage({ type: 'error', text: 'Password baru minimal harus 8 karakter.' });
       return;
     }
-
     if (newPassword !== confirmPassword) {
       setMessage({ type: 'error', text: 'Konfirmasi password baru tidak cocok.' });
       return;
     }
 
-    // --- Logika Handle Ubah Password ---
-    // Di aplikasi nyata, di sini Anda akan memanggil API untuk memvalidasi
-    // password lama dan menyimpan password baru.
+    // --- Diubah: Logika Handle Ubah Password ---
+
+    // 1. Validasi Password Lama dengan data dari context
+    if (oldPassword !== user.password) {
+      setMessage({ type: 'error', text: 'Password lama yang Anda masukkan salah.' });
+      return;
+    }
+
+    // 2. Simulasi berhasil (di aplikasi nyata, ini adalah panggilan API)
+    console.log(`PASSWORD CHANGE: Pengguna '${user.name}' berhasil mengubah password.`);
     console.log({
-      oldPassword,
-      newPassword,
+      userId: user.id || user.username,
+      newPassword: newPassword,
     });
 
-    // Simulasi berhasil
     setMessage({ type: 'success', text: 'Password berhasil diubah!' });
     setOldPassword('');
     setNewPassword('');
     setConfirmPassword('');
   };
+
+  // Ditambahkan: Pengaman jika user belum termuat (misalnya saat refresh halaman)
+  if (!user) {
+    return <div className="ubah-password-container">Memuat data pengguna...</div>;
+  }
 
   return (
     <div className="ubah-password-container">
@@ -50,7 +65,6 @@ const UbahPassword = () => {
           Untuk keamanan akun, mohon untuk tidak memberitahukan password Anda kepada siapapun.
         </p>
       </div>
-
       <div className="ubah-password-card">
         <form onSubmit={handleSubmit}>
           <div className="form-group">

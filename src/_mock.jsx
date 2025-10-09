@@ -12,6 +12,7 @@ const allEmployees = [
     jabatan: 'Kepala Bagian Ketatausahaan, Humas dan Hukum',
     golongan: 'PEMBINA (IVa)',
     profilePictureUrl: '/assets/profile-pic.jpg',
+    password: '12345678',
     // -- Data Lengkap untuk Halaman Profil --
     ttl: 'Parepare, 01-04-1988',
     agama: 'ISLAM',
@@ -85,6 +86,7 @@ const allEmployees = [
     jabatan: 'Dokter Spesialis Anak',
     golongan: 'PENATA (IIIc)',
     profilePictureUrl: '/assets/profile-pic.jpg',
+    password: '11111111',
     riwayat: {
       jabatan: [{ id: 3, namaJabatan: 'Dokter Spesialis Anak', noSk: '123 TAHUN 2020', tglSk: '15-01-2020', tmtJabatan: '15-01-2020', berkasUrl: '#' }],
       pendidikan: [{ id: 3, namaSekolah: 'SMAN 1 PAREPARE', jurusan: 'IPA', lokasi: 'PAREPARE', noIjazah: 'SMA-987654', lulus: '10-06-2001', berkasUrl: '#' }],
@@ -107,6 +109,7 @@ const allEmployees = [
     jabatan: 'Staf IT',
     golongan: 'PENGATUR (IIc)',
     profilePictureUrl: '/assets/profile-pic.jpg',
+    password: '87654321',
     riwayat: {
       jabatan: [{ id: 4, namaJabatan: 'Staf IT', noSk: '456 TAHUN 2019', tglSk: '01-02-2019', tmtJabatan: '01-02-2019', berkasUrl: '#' }],
       pendidikan: [],
@@ -124,6 +127,15 @@ const allEmployees = [
   },
   
 ];
+
+export const adminUser = {
+  id: 'admin01',
+  username: 'admin',
+  password: 'password',
+  name: 'Administrator',
+  role: 'admin',
+  profilePictureUrl: '/assets/profile-pic.jpg',
+};
 
 // DATA PEGAWAI YANG LOGIN
 export const loggedInEmployee = allEmployees[0];
