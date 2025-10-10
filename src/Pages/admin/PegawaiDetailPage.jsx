@@ -1,22 +1,22 @@
-// src/pages/admin/PegawaiDetailPage.jsx (Kode Lengkap dengan Form Edit Penuh)
+// src/pages/admin/PegawaiDetailPage.jsx (Kode Final yang Lengkap dan Diperbaiki)
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  FaArrowLeft, FaUserTie, FaUsers, FaBriefcase, FaDollarSign, 
-  FaGraduationCap, FaChalkboardTeacher, FaAward, FaCalendarAlt, 
+import axios from 'axios'; // 1. Menggunakan axios untuk konsistensi
+import {
+  FaArrowLeft, FaUserTie, FaUsers, FaBriefcase, FaDollarSign,
+  FaGraduationCap, FaChalkboardTeacher, FaAward, FaCalendarAlt,
   FaSitemap, FaCheckSquare, FaBalanceScale, FaPencilAlt
 } from 'react-icons/fa';
-import './DaftarPegawai.css'; 
+import './DaftarPegawai.css';
 
-// Impor data & komponen
-import allEmployees from '../../_mock'; 
+// Impor semua komponen riwayat
 import Modal from '../../components/Modal';
 import DataKeluarga from '../profile/DataKeluarga';
 import DataKGB from '../profile/DataKGB';
 import RiwayatCuti from '../profile/RiwayatCuti';
 import RiwayatDiklat from '../profile/RiwayatDiklat';
-import RiwayatHukuman from '../profile/RiwayatHukuman';
+import RiwayatHukuman from '../profile/RIwayatHukuman';
 import RiwayatJabatan from '../profile/RiwayatJabatan';
 import RiwayatOrganisasi from '../profile/RiwayatOrganisasi';
 import RiwayatPendidikan from '../profile/RiwayatPendidikan';
@@ -25,36 +25,50 @@ import RiwayatSKP from '../profile/RiwayatSKP';
 import RiwayatSKPPermenpan from '../profile/RiwayatSKPPermenpan';
 import StatusKepegawaian from '../profile/StatusKepegawaian';
 
-// Konfigurasi untuk menu navigasi/tab
+// Konfigurasi menu untuk rendering dinamis
 const menuItems = [
-  { key: 'status', label: 'STATUS KEPEGAWAIAN', icon: FaUserTie },
-  { key: 'keluarga', label: 'DATA KELUARGA', icon: FaUsers },
-  { key: 'jabatan', label: 'RIWAYAT JABATAN', icon: FaBriefcase },
-  { key: 'kgb', label: 'DATA KGB', icon: FaDollarSign },
-  { key: 'pendidikan', label: 'RIWAYAT PENDIDIKAN', icon: FaGraduationCap },
-  { key: 'diklat', label: 'RIWAYAT DIKLAT', icon: FaChalkboardTeacher },
-  { key: 'penghargaan', label: 'RIWAYAT PENGHARGAAN', icon: FaAward },
-  { key: 'cuti', label: 'RIWAYAT CUTI', icon: FaCalendarAlt },
-  { key: 'organisasi', label: 'RIWAYAT ORGANISASI', icon: FaSitemap },
-  { key: 'skp', label: 'RIWAYAT SKP', icon: FaCheckSquare },
-  { key: 'skp_permenpan', label: 'RIWAYAT SKP PERMENPAN', icon: FaCheckSquare },
-  { key: 'hukuman', label: 'RIWAYAT HUKUMAN', icon: FaBalanceScale },
+    { key: 'status', label: 'STATUS KEPEGAWAIAN', icon: FaUserTie, component: StatusKepegawaian },
+    { key: 'keluarga', label: 'DATA KELUARGA', icon: FaUsers, component: DataKeluarga },
+    { key: 'jabatan', label: 'RIWAYAT JABATAN', icon: FaBriefcase, component: RiwayatJabatan },
+    { key: 'kgb', label: 'DATA KGB', icon: FaDollarSign, component: DataKGB },
+    { key: 'pendidikan', label: 'RIWAYAT PENDIDIKAN', icon: FaGraduationCap, component: RiwayatPendidikan },
+    { key: 'diklat', label: 'RIWAYAT DIKLAT', icon: FaChalkboardTeacher, component: RiwayatDiklat },
+    { key: 'penghargaan', label: 'RIWAYAT PENGHARGAAN', icon: FaAward, component: RiwayatPenghargaan },
+    { key: 'cuti', label: 'RIWAYAT CUTI', icon: FaCalendarAlt, component: RiwayatCuti },
+    { key: 'organisasi', label: 'RIWAYAT ORGANISASI', icon: FaSitemap, component: RiwayatOrganisasi },
+    { key: 'skp', label: 'RIWAYAT SKP', icon: FaCheckSquare, component: RiwayatSKP },
+    { key: 'skp_permenpan', label: 'RIWAYAT SKP PERMENPAN', icon: FaCheckSquare, component: RiwayatSKPPermenpan },
+    { key: 'hukuman', label: 'RIWAYAT HUKUMAN', icon: FaBalanceScale, component: RiwayatHukuman },
 ];
 
 const PegawaiDetailPage = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('jabatan');
+
   const [employee, setEmployee] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
 
   useEffect(() => {
-    const foundEmployee = allEmployees.find(emp => emp.id.toString() === employeeId);
-    setEmployee(foundEmployee);
-    if (foundEmployee) {
-      setActiveTab('jabatan'); 
-    }
+    const fetchEmployee = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await axios.get(`http://localhost:3001/api/employees/${employeeId}`);
+        setEmployee(response.data);
+      } catch (err) {
+        setError('Pegawai tidak ditemukan atau gagal mengambil data.');
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmployee();
   }, [employeeId]);
 
   const handleOpenEditModal = () => {
@@ -72,39 +86,40 @@ const PegawaiDetailPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveChanges = (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    setEmployee(formData); 
-    alert(`Profil ${formData.name} berhasil diperbarui!`);
-    console.log('Data profil diperbarui (sisi admin):', formData);
-    handleCloseEditModal();
-  };
-  
-  const renderContent = () => {
-    if (!employee || !employee.riwayat) {
-      return <div style={{textAlign: 'center', padding: '2rem', color: '#6c757d'}}><p>Pilih menu di atas untuk melihat detail riwayat.</p></div>;
-    }
-    switch (activeTab) {
-      case 'jabatan':       return <RiwayatJabatan data={employee.riwayat.jabatan} />;
-      case 'pendidikan':    return <RiwayatPendidikan data={employee.riwayat.pendidikan} />;
-      case 'diklat':        return <RiwayatDiklat data={employee.riwayat.diklat} />;
-      case 'kgb':           return <DataKGB data={employee.riwayat.kgb} />;
-      case 'status':        return <StatusKepegawaian data={employee.riwayat.statusKepegawaian} />;
-      case 'keluarga':      return <DataKeluarga data={employee.riwayat.keluarga} />;
-      case 'penghargaan':   return <RiwayatPenghargaan data={employee.riwayat.penghargaan} />;
-      case 'organisasi':    return <RiwayatOrganisasi data={employee.riwayat.organisasi} />;
-      case 'cuti':          return <RiwayatCuti data={employee.riwayat.cuti} />;
-      case 'skp':           return <RiwayatSKP data={employee.riwayat.skp} />;
-      case 'skp_permenpan': return <RiwayatSKPPermenpan data={employee.riwayat.skpPermenpan} />;
-      case 'hukuman':       return <RiwayatHukuman data={employee.riwayat.hukuman} />;
-      default: return <div>Pilih menu untuk melihat detail.</div>;
+    try {
+      const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}`, formData);
+      setEmployee(response.data); // Perbarui state lokal dengan data dari server
+      alert(`Profil ${response.data.name} berhasil diperbarui!`);
+      handleCloseEditModal();
+    } catch (err) {
+      alert('Gagal memperbarui data pegawai.');
+      console.error(err);
     }
   };
 
-  if (!employee) {
-    return <div className="main-content">Memuat data pegawai... atau Pegawai tidak ditemukan.</div>;
-  }
-  
+  const renderContent = () => {
+    const activeComponent = menuItems.find(item => item.key === activeTab);
+    if (!activeComponent || !employee || !employee.riwayat) {
+      return <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}><p>Pilih menu di atas untuk melihat detail riwayat.</p></div>;
+    }
+    const ComponentToRender = activeComponent.component;
+    
+    // Menentukan key yang benar untuk mengakses data riwayat
+    const dataKey = {
+      'skp_permenpan': 'skpPermenpan',
+      'status': 'statusKepegawaian'
+    }[activeTab] || activeTab;
+
+    // 2. PERBAIKAN UTAMA: Teruskan 'employeeId' sebagai prop ke komponen riwayat
+    return <ComponentToRender data={employee.riwayat[dataKey]} employeeId={employeeId} />;
+  };
+
+  if (isLoading) return <div className="main-content">Memuat data pegawai...</div>;
+  if (error) return <div className="main-content">Error: {error}</div>;
+  if (!employee) return <div className="main-content">Pegawai tidak ditemukan.</div>;
+
   return (
     <div className="pegawai-detail-page">
       <header className="page-header-with-back">
@@ -114,15 +129,9 @@ const PegawaiDetailPage = () => {
         </button>
       </header>
 
-      <div className="profile-page-container"> 
+      <div className="profile-page-container">
         <div className="profile-card">
-          <button 
-            className="edit-profile-action-btn"
-            title="Edit Profil Pegawai" 
-            onClick={handleOpenEditModal}
-          >
-            <FaPencilAlt />
-          </button>
+          <button className="edit-profile-action-btn" title="Edit Profil Pegawai" onClick={handleOpenEditModal}><FaPencilAlt /></button>
           <img src={employee.profilePictureUrl || "/assets/profile-pic.jpg"} alt="Foto Profil Pegawai" className="profile-picture" />
           <div className="profile-data">
             <h3 className="employee-name">{employee.name.toUpperCase()}</h3>
@@ -154,29 +163,26 @@ const PegawaiDetailPage = () => {
         </div>
 
         <div className="profile-details-right">
-            <div className="profile-menu-card">
-                <div className="profile-menu-grid">
-                {menuItems.map(item => (
-                    <button
-                        key={item.key}
-                        className={`menu-item ${activeTab === item.key ? 'active' : ''}`}
-                        onClick={() => setActiveTab(item.key)}
-                    >
-                    <item.icon size={20} /> <span>{item.label}</span>
-                    </button>
-                ))}
-                </div>
+          <div className="profile-menu-card">
+            <div className="profile-menu-grid">
+              {menuItems.map(item => (
+                <button
+                  key={item.key}
+                  className={`menu-item ${activeTab === item.key ? 'active' : ''}`}
+                  onClick={() => setActiveTab(item.key)}
+                >
+                  <item.icon size={20} /> <span>{item.label}</span>
+                </button>
+              ))}
             </div>
-            <div className="profile-content-card">{renderContent()}</div>
+          </div>
+          <div className="profile-content-card">{renderContent()}</div>
         </div>
       </div>
 
-      <Modal 
-        isOpen={isEditModalOpen} 
-        onClose={handleCloseEditModal} 
-        title={`Edit Profil: ${employee.name}`}
-      >
+      <Modal isOpen={isEditModalOpen} onClose={handleCloseEditModal} title={`Edit Profil: ${employee.name}`}>
         <form onSubmit={handleSaveChanges}>
+          {/* 3. Form edit yang lebih lengkap */}
           <div className="edit-profile-form-grid">
             <div className="modal-form-group"><label htmlFor="name">Nama Lengkap</label><input type="text" id="name" name="name" value={formData?.name || ''} onChange={handleFormChange} /></div>
             <div className="modal-form-group"><label htmlFor="ttl">Tempat/Tgl Lahir</label><input type="text" id="ttl" name="ttl" value={formData?.ttl || ''} onChange={handleFormChange} /></div>

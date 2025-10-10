@@ -1,14 +1,9 @@
-// src/App.jsx (Kode yang Sudah Diperbaiki untuk Detail Page)
-
 import React from 'react';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import './App.css';
 
-// 1. Impor data pegawai dari _mock.jsx
-import { loggedInEmployee } from './_mock'; 
-
 // Context dan Halaman Login
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext'; // Impor useAuth
 import LoginPage from './Pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -16,7 +11,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 
-// Halaman Pegawai (Impor komponen lainnya tetap sama)
+// Halaman Pegawai
 import Dashboard from './Pages/Dashboard';
 import ProfilePage from './Pages/ProfilePage';
 import RiwayatJabatan from './pages/profile/RiwayatJabatan';
@@ -37,99 +32,84 @@ import UbahPassword from './Pages/UbahPassword';
 // Halaman Admin
 import AdminDashboard from './Pages/admin/AdminDashboard';
 import DaftarPegawai from './Pages/admin/DaftarPegawai';
-// === TAMBAHKAN IMPORT KOMPONEN HALAMAN DETAIL BARU DI SINI ===
-import PegawaiDetailPage from './Pages/admin/PegawaiDetailPage'; 
-// =============================================================
+import PegawaiDetailPage from './Pages/admin/PegawaiDetailPage';
 
-// 2. Hapus 'const employeeData' dari sini (Sudah dihapus)
+// DIUBAH: MainLayout sekarang mengambil data user dari context
+const MainLayout = () => {
+  const { user } = useAuth(); // Ambil data pengguna dari context
+  const [isSidebarOpen, setSidebarOpen] = React.useState(window.innerWidth > 768);
+  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
 
-const MainLayout = ({ employee }) => {
-  const [isSidebarOpen, setSidebarOpen] = React.useState(window.innerWidth > 768);
-  const toggleSidebar = () => setSidebarOpen(!isSidebarOpen);
+  React.useEffect(() => {
+    const handleResize = () => setSidebarOpen(window.innerWidth > 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  React.useEffect(() => {
-    const handleResize = () => setSidebarOpen(window.innerWidth > 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return (
-    <div className="app-container">
-      <Header toggleSidebar={toggleSidebar} />
-      <div className="main-body-container">
-        <Sidebar employee={employee} isOpen={isSidebarOpen} />
-        <div className="content-wrapper">
-          <main className="main-content">
-            <Outlet />
-          </main>
-          <footer className="footer">Tahun 2025</footer>
-          
-        </div>
-      </div>
-    </div>
-  );
+  return (
+    <div className="app-container">
+      <Header toggleSidebar={toggleSidebar} />
+      <div className="main-body-container">
+        {/* Teruskan data 'user' dari context ke Sidebar */}
+        <Sidebar employee={user} isOpen={isSidebarOpen} />
+        <div className="content-wrapper">
+          <main className="main-content">
+            <Outlet />
+          </main>
+          <footer className="footer">Tahun 2025</footer>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 function App() {
-  return (
-    <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
 
-          {/* === RUTE UNTUK PEGAWAI === */}
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute allowedRoles={['pegawai']}>
-                {/* 3. Gunakan 'loggedInEmployee' sebagai prop */}
-                <MainLayout employee={loggedInEmployee} />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<Dashboard employee={loggedInEmployee} />} />
-            {/* Riwayat Pegawai (Nested Routes) */}
-            <Route path="profile" element={<ProfilePage employee={loggedInEmployee} />}>
-                <Route index element={<div style={{textAlign: 'center', padding: '2rem', color: '#6c757d'}}><p>Silakan pilih menu di atas untuk melihat detail riwayat.</p></div>} />
-                <Route path="jabatan" element={<RiwayatJabatan />} />
-                <Route path="keluarga" element={<DataKeluarga />} />
-                <Route path="status" element={<StatusKepegawaian />} />
-                <Route path="kgb" element={<DataKGB />} />
-                <Route path="pendidikan" element={<RiwayatPendidikan />} />
-                <Route path="diklat" element={<RiwayatDiklat />} />
-                <Route path="penghargaan" element={<RiwayatPenghargaan />} />
-                <Route path="cuti" element={<RiwayatCuti />} />
-                <Route path="organisasi" element={<RiwayatOrganisasi />} />
-                <Route path="skp" element={<RiwayatSKP />} />
-                <Route path="skp-permenpan" element={<RiwayatSKPPermenpan />} />
-                <Route path="hukuman" element={<RiwayatHukuman />} />
-            </Route>
-            <Route path="pemberitahuan" element={<Pemberitahuan />} />
-            <Route path="ubah-password" element={<UbahPassword />} />
-          </Route>
-
-          {/* === RUTE UNTUK ADMIN === */}
-          <Route
-            path="/admin/*"
-            element={
-              <ProtectedRoute allowedRoles={['admin']}>
-                {/* Untuk Admin, Sidebar tidak perlu data 'employee' kecuali untuk tampilan profil sendiri */}
-                <MainLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<AdminDashboard />} />
-            <Route path="daftar-pegawai" element={<DaftarPegawai />} />
-            {/* === TAMBAHKAN ROUTE DETAIL PEGAWAI DI SINI === */}
-            <Route path="pegawai/detail/:employeeId" element={<PegawaiDetailPage />} />
-            {/* ============================================= */}
-            <Route path="ubah-password" element={<UbahPassword />} />
-          </Route>
-          
-        </Routes>
-      </AuthProvider>
-    </BrowserRouter>
-  );
+          {/* === RUTE UNTUK PEGAWAI (SUDAH TIDAK PAKAI MOCK) === */}
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute allowedRoles={['pegawai', 'admin']}>
+                <MainLayout />
+              </ProtectedRoute>
+            }
+          >
+            {/* Hapus prop 'employee', karena komponen akan mengambil dari context */}
+            <Route index element={<Dashboard />} />
+            <Route path="profile" element={<ProfilePage />}>
+              <Route index element={<div style={{textAlign: 'center', padding: '2rem', color: '#6c757d'}}><p>Silakan pilih menu di atas untuk melihat detail riwayat.</p></div>} />
+              <Route path="jabatan" element={<RiwayatJabatan />} />
+              <Route path="keluarga" element={<DataKeluarga />} />
+              <Route path="status" element={<StatusKepegawaian />} />
+              <Route path="kgb" element={<DataKGB />} />
+              <Route path="pendidikan" element={<RiwayatPendidikan />} />
+              <Route path="diklat" element={<RiwayatDiklat />} />
+              <Route path="penghargaan" element={<RiwayatPenghargaan />} />
+              <Route path="cuti" element={<RiwayatCuti />} />
+              <Route path="organisasi" element={<RiwayatOrganisasi />} />
+              <Route path="skp" element={<RiwayatSKP />} />
+              <Route path="skp-permenpan" element={<RiwayatSKPPermenpan />} />
+              <Route path="hukuman" element={<RiwayatHukuman />} />
+            </Route>
+            <Route path="pemberitahuan" element={<Pemberitahuan />} />
+            <Route path="ubah-password" element={<UbahPassword />} />
+            
+            {/* Rute Admin dipindah ke dalam sini agar berbagi MainLayout */}
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="admin/daftar-pegawai" element={<DaftarPegawai />} />
+            <Route path="admin/pegawai/detail/:employeeId" element={<PegawaiDetailPage />} />
+            <Route path="admin/ubah-password" element={<UbahPassword />} />
+          </Route>
+          
+        </Routes>
+      </AuthProvider>
+    </BrowserRouter>
+  );
 }
 
 export default App;

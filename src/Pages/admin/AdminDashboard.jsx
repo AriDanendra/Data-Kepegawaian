@@ -1,10 +1,5 @@
-// src/pages/admin/AdminDashboard.jsx (Diperbarui)
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import allEmployees from '../../_mock';
-// Dihapus: FaUserShield tidak lagi digunakan
-// import { FaUserShield } from 'react-icons/fa'; 
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -13,13 +8,31 @@ const AdminDashboard = () => {
     totalPegawai: 0,
     pegawaiAktif: 0,
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const total = allEmployees.length;
-    setStats({
-      totalPegawai: total,
-      pegawaiAktif: total,
-    });
+    const fetchEmployeeStats = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/employees');
+        if (!response.ok) {
+          throw new Error('Gagal mengambil data pegawai');
+        }
+        const allEmployees = await response.json();
+        const total = allEmployees.length;
+        setStats({
+          totalPegawai: total,
+          pegawaiAktif: total, // Asumsi semua pegawai yang terdata adalah aktif
+        });
+      } catch (err) {
+        setError(err.message);
+        console.error("Fetch error:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmployeeStats();
   }, []);
 
   if (!user) {
@@ -39,9 +52,8 @@ const AdminDashboard = () => {
       </div>
 
       <div className="profile-card">
-        {/* Diubah: Mengganti ikon dengan <img> untuk foto profil */}
         <img 
-          src="/assets/profile-pic.jpg" 
+          src={user.profilePictureUrl || "/assets/profile-pic.jpg"}
           alt="Foto Profil Admin" 
           className="profile-picture" 
         />
@@ -55,14 +67,22 @@ const AdminDashboard = () => {
                 <td>Status Akun</td>
                 <td>: Administrator Sistem</td>
               </tr>
-              <tr>
-                <td>Total Pegawai Terdata</td>
-                <td>: {stats.totalPegawai} Orang</td>
-              </tr>
-               <tr>
-                <td>Pegawai Aktif</td>
-                <td>: {stats.pegawaiAktif} Orang</td>
-              </tr>
+              {isLoading ? (
+                <tr><td colSpan="2">Memuat statistik...</td></tr>
+              ) : error ? (
+                 <tr><td colSpan="2" style={{color: 'red'}}>Gagal memuat statistik.</td></tr>
+              ) : (
+                <>
+                  <tr>
+                    <td>Total Pegawai Terdata</td>
+                    <td>: {stats.totalPegawai} Orang</td>
+                  </tr>
+                  <tr>
+                    <td>Pegawai Aktif</td>
+                    <td>: {stats.pegawaiAktif} Orang</td>
+                  </tr>
+                </>
+              )}
               <tr><td colSpan="2">&nbsp;</td></tr>
               <tr>
                 <td colSpan="2">

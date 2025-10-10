@@ -1,8 +1,9 @@
-// src/pages/ProfilePage.jsx (Form Edit Diperbarui)
+// src/pages/ProfilePage.jsx (Kode yang Sudah Dimodifikasi dengan Axios)
 
 import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios'; // 1. Import axios
 import {
   FaUserTie, FaUsers, FaBriefcase, FaDollarSign, FaGraduationCap,
   FaChalkboardTeacher, FaAward, FaCalendarAlt, FaSitemap, FaCheckSquare,
@@ -15,7 +16,6 @@ const ProfilePage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
 
-  // Semua fungsi handler (handleOpen, handleClose, handleChange, handleSave) tidak perlu diubah
   const handleOpenEditModal = () => {
     setFormData(user);
     setIsEditModalOpen(true);
@@ -31,21 +31,46 @@ const ProfilePage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveChanges = (e) => {
+  // 2. Ubah fungsi ini menjadi async untuk menangani API call
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    updateUser(formData);
-    alert('Profil berhasil diperbarui!');
-    console.log('Data profil diperbarui:', formData);
-    handleCloseEditModal();
+    
+    // Pastikan user dan user.id ada sebelum melanjutkan
+    if (!user || !user.id) {
+        alert('Error: User data tidak ditemukan.');
+        return;
+    }
+
+    try {
+      // 3. Kirim request PUT ke backend dengan axios
+      const response = await axios.put(
+        `http://localhost:3001/api/employees/${user.id}`, 
+        formData
+      );
+
+      // 4. Perbarui state AuthContext dengan data terbaru dari server
+      updateUser(response.data);
+
+      alert('Profil berhasil diperbarui!');
+      console.log('Data profil diperbarui dari server:', response.data);
+      handleCloseEditModal();
+
+    } catch (error) {
+      // 5. Tangani jika terjadi error
+      console.error('Gagal memperbarui profil:', error);
+      alert('Terjadi kesalahan saat memperbarui profil. Silakan coba lagi.');
+    }
   };
 
   if (!user) {
     return <div className="main-content">Memuat data pegawai...</div>;
   }
 
+  // Sisa kode JSX tidak perlu diubah...
   return (
     <main className="main-content">
       <div className="profile-page-container">
+        {/* ... Card Profil ... */}
         <div className="profile-card">
           <button 
             className="edit-profile-action-btn"
@@ -111,7 +136,6 @@ const ProfilePage = () => {
         onClose={handleCloseEditModal} 
         title="Edit Profil Pegawai"
       >
-        {/* Diubah: Form diperluas dengan semua field yang diminta */}
         <form onSubmit={handleSaveChanges}>
           <div className="edit-profile-form-grid">
             <div className="modal-form-group">

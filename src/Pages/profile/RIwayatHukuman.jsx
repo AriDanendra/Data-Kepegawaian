@@ -1,35 +1,38 @@
-// src/pages/profile/RiwayatHukuman.jsx (Diubah ke type="text")
+// src/Pages/profile/RIwayatHukuman.jsx (Kode Final Terhubung Backend)
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
+import axios from 'axios';
 import Modal from '../../components/Modal';
+import { useAuth } from '../../context/AuthContext';
 
-// Dihapus: Helper functions untuk konversi format tanggal tidak lagi diperlukan
-// const formatDateForInput = ...
-// const formatDateForDisplay = ...
-
-
-const RiwayatHukuman = ({ data: propData }) => {
+const RiwayatHukuman = ({ data: propData, employeeId: propEmployeeId }) => {
+  const [hukumanData, setHukumanData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
   
+  const { user } = useAuth();
   const context = useOutletContext();
-  const data = propData || context?.riwayat?.hukuman || [];
+  const employeeId = propEmployeeId || user.id;
+
+  useEffect(() => {
+    const initialData = propData || context?.riwayat?.hukuman || [];
+    setHukumanData(initialData);
+  }, [propData, context]);
 
   const handleOpenModal = (type, dataItem = null) => {
     setModalType(type);
     if (type === 'edit') {
       setSelectedData(dataItem);
-      // Diubah: Logika disederhanakan, tidak perlu konversi format
       setFormData(dataItem); 
     } else if (type === 'add') {
       setSelectedData(null);
       setFormData({ nama: '', noSk: '', tglSk: '', tmt: '' }); 
-    } else { // 'delete'
+    } else {
       setSelectedData(dataItem);
     }
     setIsModalOpen(true);
@@ -37,9 +40,6 @@ const RiwayatHukuman = ({ data: propData }) => {
   
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setModalType('');
-    setSelectedData(null);
-    setFormData(null);
   };
 
   const handleInputChange = (e) => {
@@ -47,30 +47,40 @@ const RiwayatHukuman = ({ data: propData }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveChanges = (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    const file = fileInputRef.current?.files[0];
-    
-    // Diubah: Logika disederhanakan, tidak perlu konversi format
-    if (modalType === 'add') {
-      alert(`Data hukuman baru "${formData.nama}" berhasil ditambahkan!`);
-      console.log("Menambahkan data baru:", { ...formData, file });
-    } else { // 'edit'
-      alert(`Data hukuman "${formData.nama}" berhasil diperbarui!`);
-      console.log("Memperbarui data:", { ...formData, file });
+    try {
+      if (modalType === 'add') {
+        const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/hukuman`, formData);
+        setHukumanData([...hukumanData, response.data]);
+        alert(`Data hukuman baru berhasil ditambahkan!`);
+      } else {
+        const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/hukuman/${selectedData.id}`, formData);
+        setHukumanData(hukumanData.map(item => (item.id === selectedData.id ? response.data : item)));
+        alert(`Data hukuman berhasil diperbarui!`);
+      }
+      handleCloseModal();
+    } catch (error) {
+      console.error("Gagal menyimpan data hukuman:", error);
+      alert("Terjadi kesalahan saat menyimpan data.");
     }
-    handleCloseModal();
   };
 
-  const handleDelete = () => {
-    alert(`Data hukuman "${selectedData.nama}" telah dihapus!`);
-    console.log("Menghapus data hukuman:", selectedData);
-    handleCloseModal();
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:3001/api/employees/${employeeId}/hukuman/${selectedData.id}`);
+      setHukumanData(hukumanData.filter(item => item.id !== selectedData.id));
+      alert(`Data hukuman telah dihapus!`);
+      handleCloseModal();
+    } catch (error) {
+      console.error("Gagal menghapus data hukuman:", error);
+      alert("Terjadi kesalahan saat menghapus data.");
+    }
   };
   
   const getModalTitle = () => {
     if (modalType === 'edit') return 'Edit Riwayat Hukuman';
-    if (modalType === 'add') return 'Tambah Riwayat Humanan';
+    if (modalType === 'add') return 'Tambah Riwayat Hukuman';
     return 'Konfirmasi Hapus Data';
   };
 
@@ -78,32 +88,12 @@ const RiwayatHukuman = ({ data: propData }) => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
-          <div className="modal-form-group">
-            <label>Nama Hukuman</label>
-            <input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
-          </div>
-          <div className="modal-form-group">
-            <label>No. SK</label>
-            <input type="text" name="noSk" value={formData.noSk || ''} onChange={handleInputChange} required />
-          </div>
-          <div className="modal-form-group">
-            <label>Tgl. SK</label>
-            {/* Diubah: type="date" menjadi type="text" */}
-            <input type="text" name="tglSk" placeholder="dd-mm-yyyy" value={formData.tglSk || ''} onChange={handleInputChange} required />
-          </div>
-          <div className="modal-form-group">
-            <label>TMT. Hukuman</label>
-            {/* Diubah: type="date" menjadi type="text" */}
-            <input type="text" name="tmt" placeholder="dd-mm-yyyy" value={formData.tmt || ''} onChange={handleInputChange} />
-          </div>
-          <div className="modal-form-group">
-            <label>Upload Berkas SK (Opsional)</label>
-            <input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" />
-          </div>
-          <div className="modal-form-actions">
-            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan</button>
-          </div>
+          <div className="modal-form-group"><label>Nama Hukuman</label><input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
+          <div className="modal-form-group"><label>No. SK</label><input type="text" name="noSk" value={formData.noSk || ''} onChange={handleInputChange} required /></div>
+          <div className="modal-form-group"><label>Tgl. SK</label><input type="text" name="tglSk" placeholder="dd-mm-yyyy" value={formData.tglSk || ''} onChange={handleInputChange} required /></div>
+          <div className="modal-form-group"><label>TMT. Hukuman</label><input type="text" name="tmt" placeholder="dd-mm-yyyy" value={formData.tmt || ''} onChange={handleInputChange} /></div>
+          <div className="modal-form-group"><label>Upload Berkas SK (Opsional)</label><input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" /></div>
+          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
         </form>
       );
     }
@@ -113,10 +103,7 @@ const RiwayatHukuman = ({ data: propData }) => {
         <div>
           <p>Anda yakin ingin menghapus data hukuman disiplin:</p>
           <p><strong>{selectedData.nama}</strong>?</p>
-          <div className="modal-form-actions">
-            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="button" className="btn btn-danger" onClick={handleDelete}>Hapus</button>
-          </div>
+          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="button" className="btn btn-danger" onClick={handleDelete}>Hapus</button></div>
         </div>
       );
     }
@@ -125,7 +112,6 @@ const RiwayatHukuman = ({ data: propData }) => {
 
   return (
     <div className="riwayat-container">
-        {/* ... sisa kode JSX tidak berubah ... */}
         <div className="riwayat-header">
             <div><h3>Riwayat Hukuman Disiplin Pegawai</h3><p className="subtitle">Informasi riwayat hukuman disiplin pegawai.</p></div>
             <button className="add-button-icon" title="Tambah Hukuman" onClick={() => handleOpenModal('add')}><FaPencilAlt /></button>
@@ -138,7 +124,7 @@ const RiwayatHukuman = ({ data: propData }) => {
             <table className="riwayat-table">
             <thead><tr><th>#</th><th>Nama Hukuman</th><th>No. SK</th><th>Tgl. SK</th><th>TMT. Hukuman</th><th>Berkas</th><th>Opsi</th></tr></thead>
             <tbody>
-                {data.map((item, index) => (
+                {hukumanData.map((item, index) => (
                 <tr key={item.id}>
                     <td>{index + 1}</td>
                     <td>{item.nama}</td>
@@ -158,7 +144,7 @@ const RiwayatHukuman = ({ data: propData }) => {
             </table>
         </div>
         <div className="table-footer">
-            <span>Showing 1 to {data.length} of {data.length} entries</span>
+            <span>Showing 1 to {hukumanData.length} of {hukumanData.length} entries</span>
             <div className="pagination"></div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>

@@ -1,35 +1,38 @@
-// src/pages/profile/RiwayatPenghargaan.jsx (Diubah ke type="text")
+// src/Pages/profile/RiwayatPenghargaan.jsx (Kode Final Terhubung Backend)
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
+import axios from 'axios';
 import Modal from '../../components/Modal';
+import { useAuth } from '../../context/AuthContext';
 
-// Dihapus: Helper functions untuk konversi tanggal tidak lagi diperlukan
-// const formatDateForInput = ...
-// const formatDateForDisplay = ...
-
-
-const RiwayatPenghargaan = ({ data: propData }) => {
+const RiwayatPenghargaan = ({ data: propData, employeeId: propEmployeeId }) => {
+  const [penghargaanData, setPenghargaanData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
   
+  const { user } = useAuth();
   const context = useOutletContext();
-  const dataRiwayatPenghargaan = propData || context?.riwayat?.penghargaan || [];
+  const employeeId = propEmployeeId || user.id;
+
+  useEffect(() => {
+    const initialData = propData || context?.riwayat?.penghargaan || [];
+    setPenghargaanData(initialData);
+  }, [propData, context]);
 
   const handleOpenModal = (type, dataItem = null) => {
     setModalType(type);
     if (type === 'edit') {
       setSelectedData(dataItem);
-      // Diubah: Logika disederhanakan, tidak perlu konversi
       setFormData(dataItem);
     } else if (type === 'add') {
       setSelectedData(null);
       setFormData({ nama: '', oleh: '', noSk: '', tglSk: '', tahun: '' });
-    } else { // 'delete'
+    } else {
       setSelectedData(dataItem);
     }
     setIsModalOpen(true);
@@ -37,9 +40,6 @@ const RiwayatPenghargaan = ({ data: propData }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setModalType('');
-    setSelectedData(null);
-    setFormData(null);
   };
 
   const handleInputChange = (e) => {
@@ -47,25 +47,35 @@ const RiwayatPenghargaan = ({ data: propData }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSaveChanges = (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
-    const file = fileInputRef.current?.files[0];
-    
-    // Diubah: Logika disederhanakan, tidak perlu konversi
-    if (modalType === 'add') {
-      alert(`Data penghargaan baru "${formData.nama}" berhasil ditambahkan! (cek konsol)`);
-      console.log("Menambahkan data baru:", { ...formData, file });
-    } else { // 'edit'
-      alert(`Data penghargaan "${formData.nama}" berhasil diperbarui! (cek konsol)`);
-      console.log("Memperbarui data:", { ...formData, file });
+    try {
+      if (modalType === 'add') {
+        const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/penghargaan`, formData);
+        setPenghargaanData([...penghargaanData, response.data]);
+        alert(`Data penghargaan baru berhasil ditambahkan!`);
+      } else {
+        const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/penghargaan/${selectedData.id}`, formData);
+        setPenghargaanData(penghargaanData.map(item => (item.id === selectedData.id ? response.data : item)));
+        alert(`Data penghargaan berhasil diperbarui!`);
+      }
+      handleCloseModal();
+    } catch (error) {
+      console.error("Gagal menyimpan data penghargaan:", error);
+      alert("Terjadi kesalahan saat menyimpan data.");
     }
-    handleCloseModal();
   };
 
-  const handleDelete = () => {
-    alert(`Data penghargaan "${selectedData.nama}" telah dihapus! (cek konsol)`);
-    console.log("Menghapus data penghargaan:", selectedData);
-    handleCloseModal();
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`http://localhost:3001/api/employees/${employeeId}/penghargaan/${selectedData.id}`);
+      setPenghargaanData(penghargaanData.filter(item => item.id !== selectedData.id));
+      alert(`Data penghargaan telah dihapus!`);
+      handleCloseModal();
+    } catch (error) {
+      console.error("Gagal menghapus data penghargaan:", error);
+      alert("Terjadi kesalahan saat menghapus data.");
+    }
   };
 
   const getModalTitle = () => {
@@ -78,35 +88,13 @@ const RiwayatPenghargaan = ({ data: propData }) => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
       return (
         <form onSubmit={handleSaveChanges}>
-          <div className="modal-form-group">
-            <label htmlFor="nama">Nama Penghargaan</label>
-            <input type="text" id="nama" name="nama" value={formData.nama || ''} onChange={handleInputChange} required />
-          </div>
-          <div className="modal-form-group">
-            <label htmlFor="oleh">Diberikan Oleh</label>
-            <input type="text" id="oleh" name="oleh" value={formData.oleh || ''} onChange={handleInputChange} />
-          </div>
-          <div className="modal-form-group">
-            <label htmlFor="noSk">No. SK</label>
-            <input type="text" id="noSk" name="noSk" value={formData.noSk || ''} onChange={handleInputChange} />
-          </div>
-          <div className="modal-form-group">
-            <label htmlFor="tglSk">Tgl. SK</label>
-            {/* Diubah: type="date" menjadi type="text" */}
-            <input type="text" id="tglSk" name="tglSk" placeholder="dd-mm-yyyy" value={formData.tglSk || ''} onChange={handleInputChange} />
-          </div>
-          <div className="modal-form-group">
-            <label htmlFor="tahun">Tahun</label>
-            <input type="text" id="tahun" name="tahun" value={formData.tahun || ''} onChange={handleInputChange} />
-          </div>
-          <div className="modal-form-group">
-            <label htmlFor="berkas">Upload Sertifikat/Piagam (Opsional)</label>
-            <input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" />
-          </div>
-          <div className="modal-form-actions">
-            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="submit" className="btn btn-primary">Simpan</button>
-          </div>
+          <div className="modal-form-group"><label htmlFor="nama">Nama Penghargaan</label><input type="text" id="nama" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
+          <div className="modal-form-group"><label htmlFor="oleh">Diberikan Oleh</label><input type="text" id="oleh" name="oleh" value={formData.oleh || ''} onChange={handleInputChange} /></div>
+          <div className="modal-form-group"><label htmlFor="noSk">No. SK</label><input type="text" id="noSk" name="noSk" value={formData.noSk || ''} onChange={handleInputChange} /></div>
+          <div className="modal-form-group"><label htmlFor="tglSk">Tgl. SK</label><input type="text" id="tglSk" name="tglSk" placeholder="dd-mm-yyyy" value={formData.tglSk || ''} onChange={handleInputChange} /></div>
+          <div className="modal-form-group"><label htmlFor="tahun">Tahun</label><input type="text" id="tahun" name="tahun" value={formData.tahun || ''} onChange={handleInputChange} /></div>
+          <div className="modal-form-group"><label htmlFor="berkas">Upload Sertifikat/Piagam (Opsional)</label><input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" /></div>
+          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
         </form>
       );
     }
@@ -116,10 +104,7 @@ const RiwayatPenghargaan = ({ data: propData }) => {
         <div>
           <p>Anda yakin ingin menghapus data penghargaan:</p>
           <p><strong>{selectedData.nama}</strong>?</p>
-          <div className="modal-form-actions">
-            <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button>
-            <button type="button" className="btn btn-danger" onClick={handleDelete}>Hapus</button>
-          </div>
+          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="button" className="btn btn-danger" onClick={handleDelete}>Hapus</button></div>
         </div>
       );
     }
@@ -128,7 +113,6 @@ const RiwayatPenghargaan = ({ data: propData }) => {
 
   return (
     <div className="riwayat-container">
-        {/* ... sisa kode JSX tidak berubah ... */}
         <div className="riwayat-header">
             <div><h3>Riwayat Tanda Jasa/Penghargaan</h3><p className="subtitle">Informasi riwayat tanda jasa/penghargaan.</p></div>
             <button className="add-button-icon" title="Tambah Penghargaan" onClick={() => handleOpenModal('add')}><FaPencilAlt /></button>
@@ -141,7 +125,7 @@ const RiwayatPenghargaan = ({ data: propData }) => {
             <table className="riwayat-table">
             <thead><tr><th>#</th><th>Nama Penghargaan</th><th>Oleh</th><th>No. SK</th><th>Tgl. SK</th><th>Tahun</th><th>Berkas</th><th>Opsi</th></tr></thead>
             <tbody>
-                {dataRiwayatPenghargaan.map((item, index) => (
+                {penghargaanData.map((item, index) => (
                 <tr key={item.id}>
                     <td>{index + 1}</td>
                     <td>{item.nama}</td>
@@ -162,7 +146,7 @@ const RiwayatPenghargaan = ({ data: propData }) => {
             </table>
         </div>
         <div className="table-footer">
-            <span>Showing 1 to {dataRiwayatPenghargaan.length} of {dataRiwayatPenghargaan.length} entries</span>
+            <span>Showing 1 to {penghargaanData.length} of {penghargaanData.length} entries</span>
             <div className="pagination"></div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
