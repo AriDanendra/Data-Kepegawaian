@@ -769,8 +769,9 @@ body {
 
 /* Tombol Aksi di Card */
 .card-action-buttons {
-    display: grid; /* Menggunakan Grid untuk tata letak yang lebih baik */
-    grid-template-columns: repeat(2, 1fr); /* Membuat 2 kolom */
+    display: grid;
+    /* Diubah: Menggunakan 3 kolom agar tombol sejajar */
+    grid-template-columns: repeat(3, 1fr); 
     gap: 8px;
     padding-top: 15px;
     margin-top: auto; /* Memastikan tombol selalu di bawah */

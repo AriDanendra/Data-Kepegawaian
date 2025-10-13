@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaIdCard, FaCamera } from 'react-icons/fa';
+import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaIdCard } from 'react-icons/fa';
 import axios from 'axios';
 import Modal from '../../components/Modal';
-import SuccessModal from '../../components/SuccessModal'; // Impor modal sukses
+import SuccessModal from '../../components/SuccessModal';
 import './DaftarPegawai.css';
 
 const DaftarPegawai = () => {
@@ -17,16 +17,13 @@ const DaftarPegawai = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
-  // State untuk modal sukses
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const [editFormData, setEditFormData] = useState({});
   const [addFormData, setAddFormData] = useState({ name: '', nip: '', jabatan: '', golongan: '' });
 
-  // State untuk upload foto
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
@@ -64,6 +61,7 @@ const DaftarPegawai = () => {
   const handleOpenEditModal = (employee) => {
     setSelectedEmployee(employee);
     setEditFormData(employee);
+    setPreview(getProfileImageUrl(employee));
     setIsEditModalOpen(true);
   };
 
@@ -77,22 +75,15 @@ const DaftarPegawai = () => {
     setIsAddModalOpen(true);
   };
 
-  const handleOpenUploadModal = (employee) => {
-    setSelectedEmployee(employee);
-    setIsUploadModalOpen(true);
-  };
-
   const handleCloseModals = () => {
     setIsEditModalOpen(false);
     setIsDeleteModalOpen(false);
     setIsAddModalOpen(false);
-    setIsUploadModalOpen(false);
     setSelectedEmployee(null);
     setSelectedFile(null);
     setPreview(null);
   };
 
-  // Fungsi untuk menampilkan modal sukses
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -112,10 +103,22 @@ const DaftarPegawai = () => {
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:3001/api/employees/${selectedEmployee.id}`, editFormData);
-      showSuccessModal(`Data pegawai "${editFormData.name}" berhasil diperbarui.`);
+      const response = await axios.put(`http://localhost:3001/api/employees/${selectedEmployee.id}`, editFormData);
+
+      if (selectedFile) {
+        const uploadData = new FormData();
+        uploadData.append('profilePicture', selectedFile);
+        await axios.post(
+          `http://localhost:3001/api/employees/${selectedEmployee.id}/upload-profile-picture`,
+          uploadData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+      }
+      
+      showSuccessModal(`Data pegawai "${response.data.name}" berhasil diperbarui.`);
       await fetchEmployees();
       handleCloseModals();
+
     } catch (err) {
       alert(err.message);
     }
@@ -151,35 +154,11 @@ const DaftarPegawai = () => {
     }
   };
 
-  const handleUploadPhoto = async () => {
-    if (!selectedFile) {
-        showSuccessModal('Pilih file gambar terlebih dahulu.');
-      return;
-    }
-    const uploadData = new FormData();
-    uploadData.append('profilePicture', selectedFile);
-
-    try {
-      await axios.post(
-        `http://localhost:3001/api/employees/${selectedEmployee.id}/upload-profile-picture`,
-        uploadData,
-        { headers: { 'Content-Type': 'multipart/form-data' } }
-      );
-      showSuccessModal('Foto profil berhasil diperbarui.');
-      await fetchEmployees();
-      handleCloseModals();
-    } catch (error) {
-      console.error('Gagal mengunggah foto:', error);
-      alert('Terjadi kesalahan saat mengunggah foto.');
-    }
-  };
-
   if (isLoading) return <div className="riwayat-container">Memuat data pegawai...</div>;
   if (error) return <div className="riwayat-container">Error: {error}</div>;
 
   return (
     <div className="riwayat-container">
-        {/* ... (kode header dan kontrol tabel tidak berubah) ... */}
         <div className="riwayat-header">
         <div><h3>Manajemen Daftar Pegawai</h3><p className="subtitle">Kelola data master semua pegawai.</p></div>
         <button className="btn-tambah-pegawai" title="Tambah Pegawai Baru" onClick={handleOpenAddModal}>
@@ -208,8 +187,7 @@ const DaftarPegawai = () => {
             </div>
             <div className="card-action-buttons">
               <button className="action-btn view" title="Lihat Detail Profil" onClick={() => handleOpenDetail(employee.id)}><FaEye /> Detail</button>
-              <button className="action-btn edit" title="Edit Data Pokok" onClick={() => handleOpenEditModal(employee)}><FaPencilAlt /> Edit</button>
-              <button className="action-btn upload" title="Ubah Foto Profil" onClick={() => handleOpenUploadModal(employee)}><FaCamera /> Foto</button>
+              <button className="action-btn edit" title="Edit Data Pokok & Foto" onClick={() => handleOpenEditModal(employee)}><FaPencilAlt /> Edit</button>
               <button className="action-btn delete" title="Hapus Pegawai" onClick={() => handleOpenDeleteModal(employee)}><FaTrash /> Hapus</button>
             </div>
           </div>
@@ -221,7 +199,6 @@ const DaftarPegawai = () => {
         <div className="pagination"><button>Previous</button><button className="active">1</button><button>Next</button></div>
       </div>
 
-      {/* ... (semua modal lain tidak berubah) ... */}
       <Modal isOpen={isAddModalOpen} onClose={handleCloseModals} title="Tambah Pegawai Baru">
         <form onSubmit={handleSaveAdd}>
           <div className="modal-form-group"><label htmlFor="add-name">Nama Lengkap</label><input type="text" id="add-name" name="name" value={addFormData.name} onChange={handleAddFormChange} required /></div>
@@ -234,47 +211,36 @@ const DaftarPegawai = () => {
 
       <Modal isOpen={isEditModalOpen} onClose={handleCloseModals} title={`Edit Data: ${selectedEmployee?.name}`}>
         <form onSubmit={handleSaveEdit}>
-          <div className="modal-form-group"><label htmlFor="nip">NIP</label><input type="text" id="nip" name="nip" value={editFormData.nip || ''} onChange={handleEditFormChange} /></div>
-          <div className="modal-form-group"><label htmlFor="password">Password</label><input type="text" id="password" name="password" value={editFormData.password || ''} onChange={handleEditFormChange} /></div>
-          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModals}>Batal</button><button type="submit" className="btn btn-primary">Simpan Perubahan</button></div>
+            <div className="modal-form-group">
+                <label>Foto Profil</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexDirection: 'column' }}>
+                    <img
+                        src={preview}
+                        alt="Preview"
+                        style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #ddd' }}
+                    />
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        ref={fileInputRef}
+                        style={{ display: 'none' }}
+                    />
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        Pilih Foto Baru
+                    </button>
+                </div>
+            </div>
+            <div className="modal-form-group"><label htmlFor="nip">NIP</label><input type="text" id="nip" name="nip" value={editFormData.nip || ''} onChange={handleEditFormChange} /></div>
+            <div className="modal-form-group"><label htmlFor="password">Password</label><input type="text" id="password" name="password" value={editFormData.password || ''} onChange={handleEditFormChange} /></div>
+            <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModals}>Batal</button><button type="submit" className="btn btn-primary">Simpan Perubahan</button></div>
         </form>
       </Modal>
 
-      {/* Modal Upload Foto */}
-      <Modal isOpen={isUploadModalOpen} onClose={handleCloseModals} title={`Ubah Foto Profil: ${selectedEmployee?.name}`}>
-        <div className="modal-form-group">
-          <label>Pratinjau Foto</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexDirection: 'column' }}>
-            <img
-              src={preview || getProfileImageUrl(selectedEmployee)}
-              alt="Preview"
-              style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #ddd' }}
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-            />
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => fileInputRef.current.click()}
-            >
-              Pilih Foto Baru
-            </button>
-          </div>
-        </div>
-        <div className="modal-form-actions">
-          <button type="button" className="btn btn-secondary" onClick={handleCloseModals}>Batal</button>
-          <button type="button" className="btn btn-primary" onClick={handleUploadPhoto} disabled={!selectedFile}>
-            Simpan Foto
-          </button>
-        </div>
-      </Modal>
-
-      {/* Modal Konfirmasi Hapus */}
       <Modal isOpen={isDeleteModalOpen} onClose={handleCloseModals} title="Konfirmasi Hapus">
         <div>
           <p>Apakah Anda yakin ingin menghapus data pegawai: <strong>{selectedEmployee?.name}</strong>?</p>
@@ -285,7 +251,6 @@ const DaftarPegawai = () => {
         </div>
       </Modal>
 
-      {/* Modal Sukses */}
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}

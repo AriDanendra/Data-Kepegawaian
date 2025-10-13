@@ -125,7 +125,26 @@ export const allEmployees = [
       hukuman: [{ id: 1, nama: 'Teguran Lisan', noSk: '862/01/PEG', tglSk: '15-01-2024', tmt: '15-01-2024', berkasUrl: '#' }],
     },
   },
-  
+  { id: 4, name: 'Budi Hartono, S.Kep., Ns.', nip: '010229728 / 199208172017031004', jabatan: 'Perawat Pelaksana', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password4', riwayat: {} },
+  { id: 5, name: 'Citra Lestari, A.Md.Farm.', nip: '010229729 / 199611202019022005', jabatan: 'Asisten Apoteker', golongan: 'PENGATUR (IIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password5', riwayat: {} },
+  { id: 6, name: 'Dewi Sartika, S.Gz.', nip: '010229730 / 199304252018032006', jabatan: 'Ahli Gizi', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password6', riwayat: {} },
+  { id: 7, name: 'Eko Prasetyo, A.Md.Rad.', nip: '010229731 / 199401102019031007', jabatan: 'Radiografer', golongan: 'PENGATUR (IIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password7', riwayat: {} },
+  { id: 8, name: 'Fitriani, S.E.', nip: '010229732 / 199107072016032008', jabatan: 'Staf Keuangan', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password8', riwayat: {} },
+  { id: 9, name: 'Gunawan, A.Md.Kes.Ling.', nip: '010229733 / 199509152020011009', jabatan: 'Sanitarian', golongan: 'PENGATUR (IIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password9', riwayat: {} },
+  { id: 10, name: 'Hasan Basri, S.Kom.', nip: '010229734 / 199003122015031010', jabatan: 'Analis Sistem Informasi', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password10', riwayat: {} },
+  { id: 11, name: 'Indah Permatasari, A.Md.Keb.', nip: '010229735 / 199705222020022011', jabatan: 'Bidan Pelaksana', golongan: 'PENGATUR (IIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password11', riwayat: {} },
+  { id: 12, name: 'Joko Susilo, S.H.', nip: '010229736 / 198912302014031012', jabatan: 'Staf Hukum dan Humas', golongan: 'PENATA (IIIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password12', riwayat: {} },
+  { id: 13, name: 'Kartika, A.Md.AK.', nip: '010229737 / 199802142021032013', jabatan: 'Analis Laboratorium', golongan: 'PENGATUR (IIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password13', riwayat: {} },
+  { id: 14, name: 'Lia Anggraini, S.Psi.', nip: '010229738 / 199410182019032014', jabatan: 'Psikolog Klinis', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password14', riwayat: {} },
+  { id: 15, name: 'Muhammad Rizky, S.T.', nip: '010229739 / 199206052017031015', jabatan: 'Teknisi Elektromedis', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password15', riwayat: {} },
+  { id: 16, name: 'Nurul Hidayah, A.Md.Fis.', nip: '010229740 / 199712012020022016', jabatan: 'Fisioterapis', golongan: 'PENGATUR (IIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password16', riwayat: {} },
+  { id: 17, name: 'Putu Wijaya, dr.', nip: '010229741 / 199101012016031017', jabatan: 'Dokter Umum', golongan: 'PENATA (IIIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password17', riwayat: {} },
+  { id: 18, name: 'Rina Marlina, S.Sos.', nip: '010229742 / 199308202018032018', jabatan: 'Pekerja Sosial', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password18', riwayat: {} },
+  { id: 19, name: 'Siti Aisyah, A.Md.Kom.', nip: '010229743 / 199904102022032019', jabatan: 'Pranata Komputer', golongan: 'PENGATUR (IIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password19', riwayat: {} },
+  { id: 20, name: 'Teguh Santoso, S.I.P.', nip: '010229744 / 199011112015031020', jabatan: 'Arsiparis', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password20', riwayat: {} },
+  { id: 21, name: 'Wulan Sari, S.Ak.', nip: '010229745 / 199502282019032021', jabatan: 'Akuntan', golongan: 'PENATA MUDA (IIIa)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password21', riwayat: {} },
+  { id: 22, name: 'Yoga Pratama, drg.', nip: '010229746 / 199209092017031022', jabatan: 'Dokter Gigi', golongan: 'PENATA (IIIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password22', riwayat: {} },
+  { id: 23, name: 'Zainal Abidin, S.Ag.', nip: '010229747 / 198807142014031023', jabatan: 'Rohaniawan', golongan: 'PENATA (IIIc)', profilePictureUrl: '/assets/profile-pic.jpg', password: 'password23', riwayat: {} }
 ];
 
 export const adminUser = {
