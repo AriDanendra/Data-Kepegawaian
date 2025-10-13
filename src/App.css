@@ -680,7 +680,7 @@ body {
 .pegawai-card-grid {
     display: grid;
     /* Responsive Grid: 3 kolom di desktop, minimum 300px per card */
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
     gap: 1.5rem; /* Menggunakan gap yang konsisten dengan ProfilePage */
     margin-bottom: 1.5rem;
 }
@@ -769,22 +769,23 @@ body {
 
 /* Tombol Aksi di Card */
 .card-action-buttons {
-    display: flex;
-    justify-content: space-between;
+    display: grid; /* Menggunakan Grid untuk tata letak yang lebih baik */
+    grid-template-columns: repeat(2, 1fr); /* Membuat 2 kolom */
+    gap: 8px;
     padding-top: 15px;
     margin-top: auto; /* Memastikan tombol selalu di bawah */
     border-top: 1px solid var(--border-color);
-    gap: 8px;
 }
 
+
 .card-action-buttons .action-btn {
-    flex: 1;
     padding: 8px 5px;
     border-radius: 4px;
     font-size: 0.8em;
     font-weight: 500;
     /* Override action-buttons di Riwayat Pages */
     height: auto; 
+    width: auto; /* Lebar otomatis */
     flex-direction: row; 
     gap: 4px;
 }
@@ -806,6 +807,13 @@ body {
 }
 .card-action-buttons .action-btn.delete:hover { background-color: #c82333; }
 
+/* CSS BARU UNTUK TOMBOL UPLOAD FOTO */
+.card-action-buttons .action-btn.upload {
+    background-color: #17a2b8; /* Warna sian untuk Foto */
+}
+.card-action-buttons .action-btn.upload:hover { background-color: #117a8b; }
+
+
 /* Tombol Tambah Pegawai (Override Riwayat Action) */
 .btn-tambah-pegawai {
     background-color: var(--accent-color);
@@ -823,17 +831,8 @@ body {
     .pegawai-card-grid {
         grid-template-columns: 1fr; /* Satu card per baris di mobile */
     }
-
-    .card-action-buttons {
-        flex-wrap: wrap; 
-    }
-
-    .card-action-buttons .action-btn {
-        flex: 1 1 100%; /* Satu tombol per baris di mobile */
-    }
     
     .btn-tambah-pegawai {
         font-size: 0.9rem;
     }
-    
 }

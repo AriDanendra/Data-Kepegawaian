@@ -1,7 +1,56 @@
 import { Router } from 'express';
 import { allEmployees } from '../data.js';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const router = Router();
+
+// ES Module fix for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Konfigurasi Multer untuk menyimpan file
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    // Perbaikan: Gunakan path.join untuk path yang absolut dan benar
+    cb(null, path.join(__dirname, '../public/uploads'));
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage });
+
+
+// Endpoint baru untuk upload foto profil
+router.post('/:id/upload-profile-picture', upload.single('profilePicture'), (req, res) => {
+  const employeeId = parseInt(req.params.id);
+  const employeeIndex = allEmployees.findIndex(emp => emp.id === employeeId);
+
+  if (employeeIndex !== -1) {
+    if (!req.file) {
+      return res.status(400).json({ message: 'Tidak ada file yang diunggah.' });
+    }
+    
+    // Path file yang bisa diakses dari frontend
+    const fileUrl = `/public/uploads/${req.file.filename}`;
+    
+    // Update data di 'database'
+    allEmployees[employeeIndex].profilePictureUrl = fileUrl;
+
+    res.json({
+      message: 'Foto profil berhasil diperbarui',
+      filePath: fileUrl,
+      user: allEmployees[employeeIndex] // Kirim data user yang sudah diupdate
+    });
+  } else {
+    res.status(404).json({ message: 'Pegawai tidak ditemukan' });
+  }
+});
+
 
 // GET: Mengambil semua data pegawai (READ)
 router.get('/', (req, res) => {

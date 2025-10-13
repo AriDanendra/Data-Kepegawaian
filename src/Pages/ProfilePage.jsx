@@ -1,6 +1,6 @@
 // src/pages/ProfilePage.jsx (Kode yang Sudah Dimodifikasi dengan Axios)
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios'; // 1. Import axios
@@ -15,6 +15,13 @@ const ProfilePage = () => {
   const { user, updateUser } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
+  
+  // State untuk file gambar yang dipilih
+  const [selectedFile, setSelectedFile] = useState(null);
+  // State untuk URL preview gambar
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
+
 
   const handleOpenEditModal = () => {
     setFormData(user);
@@ -24,12 +31,28 @@ const ProfilePage = () => {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setFormData(null);
+    setSelectedFile(null);
+    setPreview(null);
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+  
+  // Fungsi untuk menangani saat file dipilih
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
 
   // 2. Ubah fungsi ini menjadi async untuk menangani API call
   const handleSaveChanges = async (e) => {
@@ -61,10 +84,47 @@ const ProfilePage = () => {
       alert('Terjadi kesalahan saat memperbarui profil. Silakan coba lagi.');
     }
   };
+  
+    const handleUploadPhoto = async () => {
+    if (!selectedFile) {
+      alert('Pilih file gambar terlebih dahulu.');
+      return;
+    }
+
+    const uploadData = new FormData();
+    uploadData.append('profilePicture', selectedFile);
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3001/api/employees/${user.id}/upload-profile-picture`,
+        uploadData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      
+      // Perbarui user context dengan data dari server
+      updateUser(response.data.user);
+      
+      alert(response.data.message);
+      handleCloseEditModal();
+
+    } catch (error) {
+      console.error('Gagal mengunggah foto:', error);
+      alert('Terjadi kesalahan saat mengunggah foto.');
+    }
+  };
+
 
   if (!user) {
     return <div className="main-content">Memuat data pegawai...</div>;
   }
+  
+  // Menentukan URL gambar yang akan ditampilkan
+  const profileImageUrl = preview || (user.profilePictureUrl.startsWith('/public') ? `http://localhost:3001${user.profilePictureUrl}` : user.profilePictureUrl);
+
 
   // Sisa kode JSX tidak perlu diubah...
   return (
@@ -79,7 +139,9 @@ const ProfilePage = () => {
           >
             <FaPencilAlt />
           </button>
-          <img src={user.profilePictureUrl || "/assets/profile-pic.jpg"} alt="Foto Profil Pegawai" className="profile-picture" />
+          
+          <img src={profileImageUrl} alt="Foto Profil Pegawai" className="profile-picture" />
+
           <div className="profile-data">
             <h3 className="employee-name">{user.name.toUpperCase()}</h3>
             <table>
@@ -137,6 +199,40 @@ const ProfilePage = () => {
         title="Edit Profil Pegawai"
       >
         <form onSubmit={handleSaveChanges}>
+            <div className="modal-form-group">
+                <label>Foto Profil</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img 
+                        src={profileImageUrl} 
+                        alt="Preview" 
+                        style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
+                      style={{ display: 'none' }}
+                    />
+                    <button 
+                        type="button" 
+                        className="btn btn-secondary"
+                        onClick={() => fileInputRef.current.click()}
+                    >
+                        Pilih Foto
+                    </button>
+                    {selectedFile && (
+                        <button 
+                            type="button" 
+                            className="btn btn-primary"
+                            onClick={handleUploadPhoto}
+                        >
+                            Upload Foto
+                        </button>
+                    )}
+                </div>
+            </div>
+            
           <div className="edit-profile-form-grid">
             <div className="modal-form-group">
               <label htmlFor="name">Nama Lengkap</label>

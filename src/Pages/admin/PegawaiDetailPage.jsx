@@ -1,8 +1,6 @@
-// src/pages/admin/PegawaiDetailPage.jsx (Kode Final yang Lengkap dan Diperbaiki)
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios'; // 1. Menggunakan axios untuk konsistensi
+import axios from 'axios';
 import {
   FaArrowLeft, FaUserTie, FaUsers, FaBriefcase, FaDollarSign,
   FaGraduationCap, FaChalkboardTeacher, FaAward, FaCalendarAlt,
@@ -10,7 +8,6 @@ import {
 } from 'react-icons/fa';
 import './DaftarPegawai.css';
 
-// Impor semua komponen riwayat
 import Modal from '../../components/Modal';
 import DataKeluarga from '../profile/DataKeluarga';
 import DataKGB from '../profile/DataKGB';
@@ -25,7 +22,6 @@ import RiwayatSKP from '../profile/RiwayatSKP';
 import RiwayatSKPPermenpan from '../profile/RiwayatSKPPermenpan';
 import StatusKepegawaian from '../profile/StatusKepegawaian';
 
-// Konfigurasi menu untuk rendering dinamis
 const menuItems = [
     { key: 'status', label: 'STATUS KEPEGAWAIAN', icon: FaUserTie, component: StatusKepegawaian },
     { key: 'keluarga', label: 'DATA KELUARGA', icon: FaUsers, component: DataKeluarga },
@@ -53,23 +49,37 @@ const PegawaiDetailPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
 
-  useEffect(() => {
-    const fetchEmployee = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await axios.get(`http://localhost:3001/api/employees/${employeeId}`);
-        setEmployee(response.data);
-      } catch (err) {
-        setError('Pegawai tidak ditemukan atau gagal mengambil data.');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // State dan Ref untuk upload foto
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
 
+  const fetchEmployee = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.get(`http://localhost:3001/api/employees/${employeeId}`);
+      setEmployee(response.data);
+    } catch (err) {
+      setError('Pegawai tidak ditemukan atau gagal mengambil data.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     fetchEmployee();
   }, [employeeId]);
+  
+  const getProfileImageUrl = (emp) => {
+    if (preview) return preview;
+    if (!emp || !emp.profilePictureUrl) return '/assets/profile-pic.jpg';
+    const baseUrl = emp.profilePictureUrl.startsWith('/public')
+      ? `http://localhost:3001${emp.profilePictureUrl}`
+      : emp.profilePictureUrl;
+    return `${baseUrl}?t=${new Date().getTime()}`;
+  };
 
   const handleOpenEditModal = () => {
     setFormData(employee);
@@ -79,40 +89,73 @@ const PegawaiDetailPage = () => {
   const handleCloseEditModal = () => {
     setIsEditModalOpen(false);
     setFormData(null);
+    setSelectedFile(null);
+    setPreview(null);
   };
 
   const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+  
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result);
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     try {
       const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}`, formData);
-      setEmployee(response.data); // Perbarui state lokal dengan data dari server
-      alert(`Profil ${response.data.name} berhasil diperbarui!`);
-      handleCloseEditModal();
+      setEmployee(response.data);
+      
+      // Jika ada file yang dipilih, upload juga fotonya
+      if (selectedFile) {
+        await handleUploadPhoto();
+      } else {
+        alert(`Profil ${response.data.name} berhasil diperbarui!`);
+        handleCloseEditModal();
+      }
     } catch (err) {
       alert('Gagal memperbarui data pegawai.');
       console.error(err);
     }
   };
+  
+  const handleUploadPhoto = async () => {
+    if (!selectedFile) return;
+    const uploadData = new FormData();
+    uploadData.append('profilePicture', selectedFile);
+    try {
+      const response = await axios.post(
+        `http://localhost:3001/api/employees/${employeeId}/upload-profile-picture`,
+        uploadData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+      setEmployee(response.data.user); // Update state pegawai dengan data terbaru dari server
+      alert('Perubahan berhasil disimpan (termasuk foto profil).');
+      handleCloseEditModal();
+    } catch (error) {
+      throw new Error("Gagal mengunggah foto.");
+    }
+  };
 
   const renderContent = () => {
+    // ... (fungsi renderContent tidak berubah)
     const activeComponent = menuItems.find(item => item.key === activeTab);
     if (!activeComponent || !employee || !employee.riwayat) {
       return <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}><p>Pilih menu di atas untuk melihat detail riwayat.</p></div>;
     }
     const ComponentToRender = activeComponent.component;
-    
-    // Menentukan key yang benar untuk mengakses data riwayat
     const dataKey = {
       'skp_permenpan': 'skpPermenpan',
       'status': 'statusKepegawaian'
     }[activeTab] || activeTab;
 
-    // 2. PERBAIKAN UTAMA: Teruskan 'employeeId' sebagai prop ke komponen riwayat
     return <ComponentToRender data={employee.riwayat[dataKey]} employeeId={employeeId} />;
   };
 
@@ -132,7 +175,7 @@ const PegawaiDetailPage = () => {
       <div className="profile-page-container">
         <div className="profile-card">
           <button className="edit-profile-action-btn" title="Edit Profil Pegawai" onClick={handleOpenEditModal}><FaPencilAlt /></button>
-          <img src={employee.profilePictureUrl || "/assets/profile-pic.jpg"} alt="Foto Profil Pegawai" className="profile-picture" />
+          <img src={getProfileImageUrl(employee)} alt="Foto Profil Pegawai" className="profile-picture" />
           <div className="profile-data">
             <h3 className="employee-name">{employee.name.toUpperCase()}</h3>
             <table>
@@ -182,7 +225,15 @@ const PegawaiDetailPage = () => {
 
       <Modal isOpen={isEditModalOpen} onClose={handleCloseEditModal} title={`Edit Profil: ${employee.name}`}>
         <form onSubmit={handleSaveChanges}>
-          {/* 3. Form edit yang lebih lengkap */}
+            <div className="modal-form-group">
+                <label>Foto Profil</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <img src={getProfileImageUrl(formData)} alt="Preview" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <input type="file" accept="image/*" onChange={handleFileChange} ref={fileInputRef} style={{ display: 'none' }} />
+                    <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current.click()}>Pilih Foto</button>
+                </div>
+            </div>
+          
           <div className="edit-profile-form-grid">
             <div className="modal-form-group"><label htmlFor="name">Nama Lengkap</label><input type="text" id="name" name="name" value={formData?.name || ''} onChange={handleFormChange} /></div>
             <div className="modal-form-group"><label htmlFor="nip">NIP</label><input type="text" id="nip" name="nip" value={formData?.nip || ''} onChange={handleFormChange} /></div>

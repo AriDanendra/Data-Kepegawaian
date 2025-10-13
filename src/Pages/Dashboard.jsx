@@ -12,6 +12,12 @@ const Dashboard = () => {
   if (!user) {
     return <main className="main-content">Memuat data pengguna...</main>;
   }
+  
+  // Perbaikan: Logika untuk menampilkan gambar yang sudah diunggah
+  const profileImageUrl = user.profilePictureUrl && user.profilePictureUrl.startsWith('/public')
+    ? `http://localhost:3001${user.profilePictureUrl}`
+    : user.profilePictureUrl || "/assets/profile-pic.jpg";
+
 
   return (
     <main className="main-content">
@@ -26,8 +32,8 @@ const Dashboard = () => {
       </div>
 
       <div className="profile-card">
-        {/* Diubah: Gunakan user.profilePictureUrl jika ada */}
-        <img src={user.profilePictureUrl || "/assets/profile-pic.jpg"} alt="Foto Profil Pegawai" className="profile-picture" />
+        {/* Diubah: Gunakan profileImageUrl */}
+        <img src={profileImageUrl} alt="Foto Profil Pegawai" className="profile-picture" />
         <div className="profile-data">
           {/* Diubah: Semua 'employee' diganti menjadi 'user' */}
           <h3 className="employee-name">Selamat Datang, {user.name.toUpperCase()}</h3>
