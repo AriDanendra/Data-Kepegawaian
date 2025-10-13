@@ -155,10 +155,7 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
           </tbody>
         </table>
       </div>
-      <div className="table-footer">
-        <span>Showing 1 to {organisasiData.length} of {organisasiData.length} entries</span>
-        <div className="pagination"></div>
-      </div>
+      
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
       
       {/* 5. Tambahkan komponen modal sukses di sini */}

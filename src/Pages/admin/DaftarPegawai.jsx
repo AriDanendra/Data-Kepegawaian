@@ -224,6 +224,16 @@ const DaftarPegawai = () => {
         ))}
       </div>
 
+      <div className="table-footer">
+        <span>Showing {indexOfFirstItem + 1} to {indexOfLastItem > employees.length ? employees.length : indexOfLastItem} of {employees.length} entries</span>
+        <div className="pagination">
+            <button onClick={handlePrevPage} disabled={currentPage === 1}>Previous</button>
+            <button className="active">{currentPage}</button>
+            <button onClick={handleNextPage} disabled={currentPage === totalPages}>Next</button>
+        </div>
+      </div>
+
+
       <Modal isOpen={isAddModalOpen} onClose={handleCloseModals} title="Tambah Pegawai Baru">
         <form onSubmit={handleSaveAdd}>
           <div className="modal-form-group"><label htmlFor="add-name">Nama Lengkap</label><input type="text" id="add-name" name="name" value={addFormData.name} onChange={handleAddFormChange} required /></div>
