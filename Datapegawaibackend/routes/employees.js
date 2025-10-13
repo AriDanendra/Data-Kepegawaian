@@ -29,7 +29,7 @@ router.post('/', (req, res) => {
   const newEmployee = {
     id: Date.now(),
     name,
-    nip: `010229XXX / ${nip}`,
+    nip: `${nip}`,
     jabatan,
     golongan,
     password: 'password123',

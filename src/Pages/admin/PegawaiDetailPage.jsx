@@ -137,7 +137,7 @@ const PegawaiDetailPage = () => {
             <h3 className="employee-name">{employee.name.toUpperCase()}</h3>
             <table>
               <tbody>
-                <tr><td>NIP</td><td>: {employee.nip}</td></tr>
+                <tr><td>NIP</td><td>: {employee.nip.includes('/') ? employee.nip.split(' / ')[1] : employee.nip}</td></tr>
                 <tr><td>Tempat/Tgl Lahir</td><td>: {employee.ttl}</td></tr>
                 <tr><td>Agama</td><td>: {employee.agama}</td></tr>
                 <tr><td>Alamat</td><td>: {employee.alamat}</td></tr>
@@ -185,6 +185,7 @@ const PegawaiDetailPage = () => {
           {/* 3. Form edit yang lebih lengkap */}
           <div className="edit-profile-form-grid">
             <div className="modal-form-group"><label htmlFor="name">Nama Lengkap</label><input type="text" id="name" name="name" value={formData?.name || ''} onChange={handleFormChange} /></div>
+            <div className="modal-form-group"><label htmlFor="nip">NIP</label><input type="text" id="nip" name="nip" value={formData?.nip || ''} onChange={handleFormChange} /></div>
             <div className="modal-form-group"><label htmlFor="ttl">Tempat/Tgl Lahir</label><input type="text" id="ttl" name="ttl" value={formData?.ttl || ''} onChange={handleFormChange} /></div>
             <div className="modal-form-group"><label htmlFor="agama">Agama</label><input type="text" id="agama" name="agama" value={formData?.agama || ''} onChange={handleFormChange} /></div>
             <div className="modal-form-group"><label htmlFor="alamat">Alamat</label><input type="text" id="alamat" name="alamat" value={formData?.alamat || ''} onChange={handleFormChange} /></div>

@@ -2,18 +2,19 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext'; // Ditambahkan: Import useAuth
+import axios from 'axios';
 import './UbahPassword.css';
 
 const UbahPassword = () => {
   // Ditambahkan: Ambil data user yang sedang login dari context
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
 
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
 
@@ -30,26 +31,31 @@ const UbahPassword = () => {
       setMessage({ type: 'error', text: 'Konfirmasi password baru tidak cocok.' });
       return;
     }
-
-    // --- Diubah: Logika Handle Ubah Password ---
-
-    // 1. Validasi Password Lama dengan data dari context
+    
     if (oldPassword !== user.password) {
-      setMessage({ type: 'error', text: 'Password lama yang Anda masukkan salah.' });
-      return;
+        setMessage({ type: 'error', text: 'Password lama yang Anda masukkan salah.' });
+        return;
     }
 
-    // 2. Simulasi berhasil (di aplikasi nyata, ini adalah panggilan API)
-    console.log(`PASSWORD CHANGE: Pengguna '${user.name}' berhasil mengubah password.`);
-    console.log({
-      userId: user.id || user.username,
-      newPassword: newPassword,
-    });
+    try {
+        const response = await axios.post('http://localhost:3001/api/auth/change-password', {
+            userId: user.id,
+            oldPassword,
+            newPassword,
+            role: user.role
+        });
 
-    setMessage({ type: 'success', text: 'Password berhasil diubah!' });
-    setOldPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
+        // Perbarui password di state lokal setelah berhasil
+        updateUser({ ...user, password: newPassword });
+
+        setMessage({ type: 'success', text: response.data.message });
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+
+    } catch (error) {
+        setMessage({ type: 'error', text: error.response?.data?.message || 'Terjadi kesalahan' });
+    }
   };
 
   // Ditambahkan: Pengaman jika user belum termuat (misalnya saat refresh halaman)

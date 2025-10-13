@@ -84,7 +84,7 @@ const ProfilePage = () => {
             <h3 className="employee-name">{user.name.toUpperCase()}</h3>
             <table>
               <tbody>
-                <tr><td>NIP</td><td>: {user.nip}</td></tr>
+                <tr><td>NIP</td><td>: {user.nip.includes('/') ? user.nip.split(' / ')[1] : user.nip}</td></tr>
                 <tr><td>Tempat/Tgl Lahir</td><td>: {user.ttl}</td></tr>
                 <tr><td>Agama</td><td>: {user.agama}</td></tr>
                 <tr><td>Alamat</td><td>: {user.alamat}</td></tr>
@@ -141,6 +141,10 @@ const ProfilePage = () => {
             <div className="modal-form-group">
               <label htmlFor="name">Nama Lengkap</label>
               <input type="text" id="name" name="name" value={formData?.name || ''} onChange={handleFormChange} />
+            </div>
+            <div className="modal-form-group">
+              <label htmlFor="nip">NIP</label>
+              <input type="text" id="nip" name="nip" value={formData?.nip || ''} onChange={handleFormChange} />
             </div>
             <div className="modal-form-group">
               <label htmlFor="ttl">Tempat/Tgl Lahir</label>

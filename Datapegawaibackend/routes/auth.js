@@ -37,4 +37,29 @@ router.post('/login', (req, res) => {
   return res.status(401).json({ message: 'Username atau password salah' });
 });
 
+// Endpoint untuk mengubah password
+router.post('/change-password', (req, res) => {
+    const { userId, oldPassword, newPassword, role } = req.body;
+  
+    let userToUpdate;
+  
+    if (role === 'admin') {
+      userToUpdate = adminUser;
+    } else {
+      userToUpdate = allEmployees.find(emp => emp.id === userId);
+    }
+  
+    if (!userToUpdate) {
+      return res.status(404).json({ message: 'Pengguna tidak ditemukan' });
+    }
+  
+    if (userToUpdate.password !== oldPassword) {
+      return res.status(400).json({ message: 'Password lama salah' });
+    }
+  
+    userToUpdate.password = newPassword;
+  
+    res.json({ message: 'Password berhasil diubah' });
+  });
+
 export default router;
