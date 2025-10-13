@@ -144,7 +144,6 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td><a href={item.berkasUrl} className="download-button" target="_blank" rel="noopener noreferrer">Download</a></td>
                 <td>
                   <div className="action-buttons">
-                    <button className="action-btn refresh" title="Refresh"><FaSync /></button>
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
                     <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
                   </div>
