@@ -127,7 +127,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
         <button className="add-button-icon" title="Tambah Riwayat Jabatan" onClick={() => handleOpenModal('add')}><FaPencilAlt /></button>
       </div>
       <div className="table-controls">
-        <div className="show-entries"><label htmlFor="entries">Show</label><select name="entries" id="entries"><option value="10">10</option></select><span>entries</span></div>
+
         <div className="search-box"><label htmlFor="search">Search:</label><input type="search" id="search" /></div>
       </div>
       <div className="table-responsive-wrapper">
@@ -153,10 +153,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
           </tbody>
         </table>
       </div>
-      <div className="table-footer">
-        <span>Showing 1 to {jabatanData.length} of {jabatanData.length} entries</span>
-        <div className="pagination"><button>Previous</button><button className="active">1</button><button>Next</button></div>
-      </div>
+      
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
 
       {/* 5. Tambahkan komponen modal sukses di sini */}

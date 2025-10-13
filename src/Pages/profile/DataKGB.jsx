@@ -142,9 +142,6 @@ const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
       </div>
 
       <div className="table-controls">
-        <div className="show-entries">
-          <label>Show</label> <select><option value="10">10</option></select> <span>entries</span>
-        </div>
         <div className="search-box">
           <label>Search:</label> <input type="search" />
         </div>
@@ -188,15 +185,6 @@ const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
             ))}
           </tbody>
         </table>
-      </div>
-      
-      <div className="table-footer">
-        <span>Showing 1 to {kgbData.length} of {kgbData.length} entries</span>
-        <div className="pagination">
-          <button>Previous</button>
-          <button className="active">1</button>
-          <button>Next</button>
-        </div>
       </div>
 
       <Modal 

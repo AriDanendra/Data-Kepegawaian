@@ -28,6 +28,9 @@ const DaftarPegawai = () => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
+  // State untuk pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   const fetchEmployees = async () => {
     setIsLoading(true);
@@ -45,6 +48,25 @@ const DaftarPegawai = () => {
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  // Logika untuk pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = employees.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(employees.length / itemsPerPage);
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
 
   const getProfileImageUrl = (employee) => {
     if (!employee || !employee.profilePictureUrl) return '/assets/profile-pic.jpg';
@@ -167,12 +189,20 @@ const DaftarPegawai = () => {
       </div>
 
       <div className="table-controls">
-        <div className="show-entries"><label htmlFor="entries">Show</label><select name="entries" id="entries"><option value="10">10</option></select><span>entries</span></div>
+        <div className="show-entries">
+          <label htmlFor="entries">Show</label>
+          <select name="entries" id="entries" value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))}>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+          <span>entries</span>
+        </div>
         <div className="search-box"><label htmlFor="search">Search:</label><input type="search" id="search" /></div>
       </div>
 
       <div className="pegawai-card-grid">
-        {employees.map((employee) => (
+        {currentItems.map((employee) => (
           <div key={employee.id} className="pegawai-item-card profile-content-card">
             <div className="pegawai-card-header">
               <img src={getProfileImageUrl(employee)} alt={employee.name} className="pegawai-foto-card" />
@@ -192,11 +222,6 @@ const DaftarPegawai = () => {
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="table-footer">
-        <span>Showing 1 to {employees.length} of {employees.length} entries</span>
-        <div className="pagination"><button>Previous</button><button className="active">1</button><button>Next</button></div>
       </div>
 
       <Modal isOpen={isAddModalOpen} onClose={handleCloseModals} title="Tambah Pegawai Baru">

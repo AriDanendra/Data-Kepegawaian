@@ -129,7 +129,6 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
         <button className="add-button-icon" title="Tambah Riwayat Pendidikan" onClick={() => handleOpenModal('add')}><FaPencilAlt /></button>
       </div>
       <div className="table-controls">
-        <div className="show-entries"><label>Show</label> <select><option value="10">10</option></select> <span>entries</span></div>
         <div className="search-box"><label>Search:</label> <input type="search" /></div>
       </div>
       <div className="table-responsive-wrapper">
