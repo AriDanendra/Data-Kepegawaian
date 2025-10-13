@@ -1,10 +1,11 @@
-// src/Pages/profile/StatusKepegawaian.jsx (Kode Final Terhubung Backend)
+// src/Pages/profile/StatusKepegawaian.jsx (Kode Final dengan Modal Sukses)
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
+import SuccessModal from '../../components/SuccessModal'; // 1. Impor modal sukses
 import { useAuth } from '../../context/AuthContext';
 
 // Helper functions to handle date format conversion
@@ -28,6 +29,10 @@ const StatusKepegawaian = ({ data: propData, employeeId: propEmployeeId }) => {
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
   
+  // 2. State untuk mengontrol modal sukses
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
   const { user } = useAuth();
   const context = useOutletContext();
   const employeeId = propEmployeeId || user.id;
@@ -65,6 +70,12 @@ const StatusKepegawaian = ({ data: propData, employeeId: propEmployeeId }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 3. Fungsi untuk menampilkan modal sukses
+  const showSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(true);
+  };
+
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     const dataToSave = {
@@ -77,11 +88,11 @@ const StatusKepegawaian = ({ data: propData, employeeId: propEmployeeId }) => {
       if (modalType === 'add') {
         const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/status`, dataToSave);
         setStatusData([...statusData, response.data]);
-        alert(`Data status baru berhasil ditambahkan!`);
+        showSuccessModal(`Data status baru berhasil ditambahkan!`); // 4. Ganti alert
       } else {
         const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/status/${selectedData.id}`, dataToSave);
         setStatusData(statusData.map(item => (item.id === selectedData.id ? response.data : item)));
-        alert(`Data status berhasil diperbarui!`);
+        showSuccessModal(`Data status berhasil diperbarui!`); // 4. Ganti alert
       }
       handleCloseModal();
     } catch (error) {
@@ -94,7 +105,7 @@ const StatusKepegawaian = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${employeeId}/status/${selectedData.id}`);
       setStatusData(statusData.filter(item => item.id !== selectedData.id));
-      alert(`Data status telah dihapus!`);
+      showSuccessModal(`Data status telah dihapus!`); // 4. Ganti alert
       handleCloseModal();
     } catch (error) {
       console.error("Gagal menghapus data status:", error);
@@ -183,6 +194,13 @@ const StatusKepegawaian = ({ data: propData, employeeId: propEmployeeId }) => {
           <div className="pagination"></div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
+        
+        {/* 5. Tambahkan komponen modal sukses di sini */}
+        <SuccessModal
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          message={successMessage}
+        />
     </div>
   );
 };

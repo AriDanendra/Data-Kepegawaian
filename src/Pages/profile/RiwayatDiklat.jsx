@@ -1,10 +1,11 @@
-// src/Pages/profile/RiwayatDiklat.jsx (Kode Final Terhubung Backend)
+// src/Pages/profile/RiwayatDiklat.jsx (Kode Final dengan Modal Sukses)
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
+import SuccessModal from '../../components/SuccessModal'; // 1. Impor modal sukses
 import { useAuth } from '../../context/AuthContext';
 
 const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
@@ -14,6 +15,10 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
+
+  // 2. State untuk mengontrol modal sukses
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const { user } = useAuth();
   const context = useOutletContext();
@@ -53,17 +58,23 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 3. Fungsi untuk menampilkan modal sukses
+  const showSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(true);
+  };
+
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     try {
       if (modalType.startsWith('add')) {
         const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/diklat`, formData);
         setDiklatData([...diklatData, response.data]);
-        alert(`Data diklat baru berhasil ditambahkan!`);
+        showSuccessModal(`Data diklat baru berhasil ditambahkan!`); // 4. Ganti alert
       } else { // 'edit'
         const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/diklat/${selectedData.id}`, formData);
         setDiklatData(diklatData.map(item => (item.id === selectedData.id ? response.data : item)));
-        alert(`Data diklat berhasil diperbarui!`);
+        showSuccessModal(`Data diklat berhasil diperbarui!`); // 4. Ganti alert
       }
       handleCloseModal();
     } catch (error) {
@@ -76,7 +87,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${employeeId}/diklat/${selectedData.id}`);
       setDiklatData(diklatData.filter(item => item.id !== selectedData.id));
-      alert(`Data diklat telah dihapus!`);
+      showSuccessModal(`Data diklat telah dihapus!`); // 4. Ganti alert
       handleCloseModal();
     } catch (error) {
       console.error("Gagal menghapus data diklat:", error);
@@ -182,6 +193,13 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
       </div>
       
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
+
+      {/* 5. Tambahkan komponen modal sukses di sini */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        message={successMessage}
+      />
     </div>
   );
 };

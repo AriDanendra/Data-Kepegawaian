@@ -1,13 +1,13 @@
-// src/Pages/profile/DataKGB.jsx (Kode Final yang Lengkap dan Diperbaiki)
+// src/Pages/profile/DataKGB.jsx (Kode Final dengan Modal Sukses)
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
+import SuccessModal from '../../components/SuccessModal'; // 1. Impor modal sukses
 import { useAuth } from '../../context/AuthContext';
 
-// 1. Terima 'employeeId' dari props
 const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
   const [kgbData, setKgbData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -15,22 +15,21 @@ const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
-  
-  const { user } = useAuth(); // User yang sedang login
-  const context = useOutletContext(); // Data dari ProfilePage (saat pegawai login)
 
-  // 2. Logika utama untuk menentukan ID pegawai yang datanya akan dikelola
-  // Jika 'propEmployeeId' ada (diberikan oleh PegawaiDetailPage admin), gunakan itu.
-  // Jika tidak, berarti pegawai sedang melihat profilnya sendiri, jadi gunakan 'user.id'.
+  // 2. State untuk mengontrol modal sukses
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  
+  const { user } = useAuth();
+  const context = useOutletContext();
   const employeeId = propEmployeeId || user.id;
 
   useEffect(() => {
-    // Set data awal dari props atau context saat komponen pertama kali dimuat
     const initialData = propData || context?.riwayat?.kgb || [];
     setKgbData(initialData);
   }, [propData, context]);
 
-  // --- MODAL HANDLERS (Tidak ada perubahan logika) ---
+  // --- MODAL HANDLERS ---
   const handleOpenModal = (type, data = null) => {
     setModalType(type);
     if (type === 'edit') {
@@ -57,6 +56,12 @@ const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 3. Fungsi untuk menampilkan modal sukses
+  const showSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(true);
+  };
+
   // --- FUNGSI INTERAKSI DENGAN BACKEND ---
   const handleSaveChanges = async (e) => {
     e.preventDefault();
@@ -64,11 +69,11 @@ const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
       if (modalType === 'add') {
         const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/kgb`, formData);
         setKgbData([...kgbData, response.data]);
-        alert(`Data KGB baru berhasil ditambahkan!`);
+        showSuccessModal(`Data KGB baru berhasil ditambahkan!`); // 4. Ganti alert
       } else { // 'edit'
         const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/kgb/${selectedData.id}`, formData);
         setKgbData(kgbData.map(item => (item.id === selectedData.id ? response.data : item)));
-        alert(`Data KGB berhasil diperbarui!`);
+        showSuccessModal(`Data KGB berhasil diperbarui!`); // 4. Ganti alert
       }
       handleCloseModal();
     } catch (error) {
@@ -81,7 +86,7 @@ const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${employeeId}/kgb/${selectedData.id}`);
       setKgbData(kgbData.filter(item => item.id !== selectedData.id));
-      alert(`Data KGB telah dihapus!`);
+      showSuccessModal(`Data KGB telah dihapus!`); // 4. Ganti alert
       handleCloseModal();
     } catch (error) {
       console.error("Gagal menghapus data KGB:", error);
@@ -201,6 +206,13 @@ const DataKGB = ({ data: propData, employeeId: propEmployeeId }) => {
       >
         {renderModalContent()}
       </Modal>
+
+      {/* 5. Tambahkan komponen modal sukses di sini */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        message={successMessage}
+      />
     </div>
   );
 };

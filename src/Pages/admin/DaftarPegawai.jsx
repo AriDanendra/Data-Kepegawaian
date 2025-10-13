@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaIdCard, FaCamera } from 'react-icons/fa';
 import axios from 'axios';
 import Modal from '../../components/Modal';
+import SuccessModal from '../../components/SuccessModal'; // Impor modal sukses
 import './DaftarPegawai.css';
 
 const DaftarPegawai = () => {
@@ -16,7 +17,11 @@ const DaftarPegawai = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false); // State untuk modal upload
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  // State untuk modal sukses
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const [editFormData, setEditFormData] = useState({});
   const [addFormData, setAddFormData] = useState({ name: '', nip: '', jabatan: '', golongan: '' });
@@ -87,10 +92,16 @@ const DaftarPegawai = () => {
     setPreview(null);
   };
 
+  // Fungsi untuk menampilkan modal sukses
+  const showSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(true);
+  };
+
   const handleDeleteEmployee = async () => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${selectedEmployee.id}`);
-      alert(`Data pegawai "${selectedEmployee.name}" berhasil dihapus.`);
+      showSuccessModal(`Data pegawai "${selectedEmployee.name}" berhasil dihapus.`);
       setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
       handleCloseModals();
     } catch (err) {
@@ -102,7 +113,7 @@ const DaftarPegawai = () => {
     e.preventDefault();
     try {
       await axios.put(`http://localhost:3001/api/employees/${selectedEmployee.id}`, editFormData);
-      alert(`Data pegawai "${editFormData.name}" berhasil diperbarui.`);
+      showSuccessModal(`Data pegawai "${editFormData.name}" berhasil diperbarui.`);
       await fetchEmployees();
       handleCloseModals();
     } catch (err) {
@@ -114,7 +125,7 @@ const DaftarPegawai = () => {
     e.preventDefault();
     try {
       await axios.post('http://localhost:3001/api/employees', addFormData);
-      alert(`Pegawai baru "${addFormData.name}" berhasil ditambahkan.`);
+      showSuccessModal(`Pegawai baru "${addFormData.name}" berhasil ditambahkan.`);
       await fetchEmployees();
       handleCloseModals();
     } catch (err) {
@@ -142,7 +153,7 @@ const DaftarPegawai = () => {
 
   const handleUploadPhoto = async () => {
     if (!selectedFile) {
-      alert('Pilih file gambar terlebih dahulu.');
+        showSuccessModal('Pilih file gambar terlebih dahulu.');
       return;
     }
     const uploadData = new FormData();
@@ -154,7 +165,7 @@ const DaftarPegawai = () => {
         uploadData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
-      alert('Foto profil berhasil diperbarui.');
+      showSuccessModal('Foto profil berhasil diperbarui.');
       await fetchEmployees();
       handleCloseModals();
     } catch (error) {
@@ -168,7 +179,8 @@ const DaftarPegawai = () => {
 
   return (
     <div className="riwayat-container">
-      <div className="riwayat-header">
+        {/* ... (kode header dan kontrol tabel tidak berubah) ... */}
+        <div className="riwayat-header">
         <div><h3>Manajemen Daftar Pegawai</h3><p className="subtitle">Kelola data master semua pegawai.</p></div>
         <button className="btn-tambah-pegawai" title="Tambah Pegawai Baru" onClick={handleOpenAddModal}>
           <FaPlus style={{ marginRight: '8px' }} />Tambah Pegawai
@@ -209,8 +221,8 @@ const DaftarPegawai = () => {
         <div className="pagination"><button>Previous</button><button className="active">1</button><button>Next</button></div>
       </div>
 
-      {/* ... Modal Tambah dan Edit (tidak berubah) ... */}
-       <Modal isOpen={isAddModalOpen} onClose={handleCloseModals} title="Tambah Pegawai Baru">
+      {/* ... (semua modal lain tidak berubah) ... */}
+      <Modal isOpen={isAddModalOpen} onClose={handleCloseModals} title="Tambah Pegawai Baru">
         <form onSubmit={handleSaveAdd}>
           <div className="modal-form-group"><label htmlFor="add-name">Nama Lengkap</label><input type="text" id="add-name" name="name" value={addFormData.name} onChange={handleAddFormChange} required /></div>
           <div className="modal-form-group"><label htmlFor="add-nip">NIP</label><input type="text" id="add-nip" name="nip" value={addFormData.nip} onChange={handleAddFormChange} required /></div>
@@ -272,6 +284,13 @@ const DaftarPegawai = () => {
           </div>
         </div>
       </Modal>
+
+      {/* Modal Sukses */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        message={successMessage}
+      />
     </div>
   );
 };

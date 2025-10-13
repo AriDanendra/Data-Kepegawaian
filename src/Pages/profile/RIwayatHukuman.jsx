@@ -1,10 +1,11 @@
-// src/Pages/profile/RIwayatHukuman.jsx (Kode Final Terhubung Backend)
+// src/Pages/profile/RIwayatHukuman.jsx (Kode Final dengan Modal Sukses)
 
 import React, { useState, useRef, useEffect } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
+import SuccessModal from '../../components/SuccessModal'; // 1. Impor modal sukses
 import { useAuth } from '../../context/AuthContext';
 
 const RiwayatHukuman = ({ data: propData, employeeId: propEmployeeId }) => {
@@ -14,6 +15,10 @@ const RiwayatHukuman = ({ data: propData, employeeId: propEmployeeId }) => {
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const fileInputRef = useRef(null);
+
+  // 2. State untuk mengontrol modal sukses
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   
   const { user } = useAuth();
   const context = useOutletContext();
@@ -47,17 +52,23 @@ const RiwayatHukuman = ({ data: propData, employeeId: propEmployeeId }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 3. Fungsi untuk menampilkan modal sukses
+  const showSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(true);
+  };
+
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     try {
       if (modalType === 'add') {
         const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/hukuman`, formData);
         setHukumanData([...hukumanData, response.data]);
-        alert(`Data hukuman baru berhasil ditambahkan!`);
+        showSuccessModal(`Data hukuman baru berhasil ditambahkan!`); // 4. Ganti alert
       } else {
         const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/hukuman/${selectedData.id}`, formData);
         setHukumanData(hukumanData.map(item => (item.id === selectedData.id ? response.data : item)));
-        alert(`Data hukuman berhasil diperbarui!`);
+        showSuccessModal(`Data hukuman berhasil diperbarui!`); // 4. Ganti alert
       }
       handleCloseModal();
     } catch (error) {
@@ -70,7 +81,7 @@ const RiwayatHukuman = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${employeeId}/hukuman/${selectedData.id}`);
       setHukumanData(hukumanData.filter(item => item.id !== selectedData.id));
-      alert(`Data hukuman telah dihapus!`);
+      showSuccessModal(`Data hukuman telah dihapus!`); // 4. Ganti alert
       handleCloseModal();
     } catch (error) {
       console.error("Gagal menghapus data hukuman:", error);
@@ -148,6 +159,13 @@ const RiwayatHukuman = ({ data: propData, employeeId: propEmployeeId }) => {
             <div className="pagination"></div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
+        
+        {/* 5. Tambahkan komponen modal sukses di sini */}
+        <SuccessModal
+          isOpen={isSuccessModalOpen}
+          onClose={() => setIsSuccessModalOpen(false)}
+          message={successMessage}
+        />
     </div>
   );
 };
