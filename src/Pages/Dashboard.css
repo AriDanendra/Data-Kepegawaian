@@ -63,13 +63,13 @@
 
 .stat-card .stat-info h3 {
   margin: 0;
-  font-size: 1.15rem; /* Ukuran font sedikit disesuaikan */
-  font-weight: 700;
-  white-space: normal; /* DIUBAH: Mengizinkan teks untuk turun baris */
+  font-size: 1.1rem; /* MODIFIED: Ukuran font dikecilkan */
+  font-weight: 600; /* MODIFIED: Ketebalan font dikurangi */
+  white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.3; /* Menambahkan jarak antar baris jika teksnya turun */
-  word-break: break-word; /* Memastikan kata yang panjang bisa dipatahkan */
+  line-height: 1.3;
+  word-break: break-word;
 }
 
 .stat-card.orange { background: linear-gradient(45deg, #fd7e14, #ffc107); }

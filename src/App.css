@@ -446,6 +446,36 @@ body {
   font-size: 0.9rem;
 }
 
+/* NEW: Specific styles for headers of tables inside the profile content area */
+.profile-content-card .riwayat-header {
+  background: none; /* Remove dashboard-like background */
+  box-shadow: none; /* Remove shadow */
+  padding: 0; /* Remove extra padding */
+  margin-bottom: 1.5rem; /* Keep the margin */
+  padding-bottom: 1rem; /* Add padding just for the bottom space */
+  border-bottom: 1px solid var(--border-color); /* Add a separator line */
+  border-radius: 0; /* Remove rounded corners */
+  align-items: center; /* Align title and button vertically */
+}
+
+.profile-content-card .riwayat-header h3 {
+  font-size: 1.3rem; /* A more appropriate title size */
+  font-weight: 600;
+  padding-bottom: 0; /* Remove bottom padding */
+  color: var(--text-primary);
+  position: static; /* Reset positioning from the other style */
+}
+
+.profile-content-card .riwayat-header h3::after {
+  display: none; /* IMPORTANT: Remove the orange underline effect */
+}
+
+.profile-content-card .riwayat-header .subtitle {
+  margin-top: 0.1rem; /* Adjust subtitle position */
+  font-size: 0.9rem;
+}
+
+
 .table-controls {
   display: flex;
   justify-content: space-between;

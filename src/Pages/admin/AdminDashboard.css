@@ -44,8 +44,8 @@
 
 .stat-card .stat-info h3 {
   margin: 0;
-  font-size: 2.2rem;
-  font-weight: 700;
+  font-size: 1.5rem; /* MODIFIED: Ukuran font disesuaikan agar tidak terlalu besar */
+  font-weight: 600; /* MODIFIED: Ketebalan font dikurangi */
 }
 
 /* Variasi Warna Kartu */
