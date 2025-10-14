@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaIdCard } from 'react-icons/fa';
+import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaBriefcase } from 'react-icons/fa';
 import axios from 'axios';
 import Modal from '../../components/Modal';
 import SuccessModal from '../../components/SuccessModal';
@@ -208,7 +208,7 @@ const DaftarPegawai = () => {
               <img src={getProfileImageUrl(employee)} alt={employee.name} className="pegawai-foto-card" />
               <div className="pegawai-details">
                 <h4 className="employee-name">{employee.name}</h4>
-                <p className="pegawai-nip-card"><FaIdCard className="icon-detail" /> {employee.nip && (employee.nip.includes('/') ? employee.nip.split(' / ')[1] : employee.nip)}</p>
+                <p className="pegawai-nip-card"><FaBriefcase className="icon-detail" /> {employee.jabatan}</p>
               </div>
             </div>
             <div className="pegawai-card-body">
