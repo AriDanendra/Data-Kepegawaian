@@ -126,8 +126,11 @@ body {
 }
 
 .user-profile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding: 0 1.5rem 1.5rem 1.5rem;
-  text-align: center;
+  text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -137,7 +140,21 @@ body {
   cursor: pointer;
 }
 
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  font-size: 2.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s, transform 0.2s;
+}
 
+.sidebar-close-btn:hover {
+  color: var(--text-primary);
+  transform: rotate(90deg);
+}
 
 .nav-menu {
   list-style-type: none;

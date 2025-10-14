@@ -1,12 +1,9 @@
-// src/pages/UbahPassword.jsx (Disesuaikan dengan AuthContext)
-
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext'; // Ditambahkan: Import useAuth
+import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import './UbahPassword.css';
 
 const UbahPassword = () => {
-  // Ditambahkan: Ambil data user yang sedang login dari context
   const { user, updateUser } = useAuth();
 
   const [oldPassword, setOldPassword] = useState('');
@@ -18,7 +15,6 @@ const UbahPassword = () => {
     e.preventDefault();
     setMessage({ type: '', text: '' });
 
-    // Validasi Sederhana (tetap sama)
     if (!oldPassword || !newPassword || !confirmPassword) {
       setMessage({ type: 'error', text: 'Semua kolom harus diisi.' });
       return;
@@ -45,7 +41,6 @@ const UbahPassword = () => {
             role: user.role
         });
 
-        // Perbarui password di state lokal setelah berhasil
         updateUser({ ...user, password: newPassword });
 
         setMessage({ type: 'success', text: response.data.message });
@@ -58,19 +53,22 @@ const UbahPassword = () => {
     }
   };
 
-  // Ditambahkan: Pengaman jika user belum termuat (misalnya saat refresh halaman)
   if (!user) {
-    return <div className="ubah-password-container">Memuat data pengguna...</div>;
+    return <div className="riwayat-container">Memuat data pengguna...</div>;
   }
 
   return (
-    <div className="ubah-password-container">
-      <div className="ubah-password-header">
-        <h2>Ubah Password</h2>
-        <p className="subtitle">
-          Untuk keamanan akun, mohon untuk tidak memberitahukan password Anda kepada siapapun.
-        </p>
+    <div className="riwayat-container">
+      {/* Menggunakan style judul yang konsisten */}
+      <div className="riwayat-header">
+        <div>
+          <h3>Ubah Password</h3>
+          <p className="subtitle">
+            Untuk keamanan akun, mohon untuk tidak memberitahukan password Anda kepada siapapun.
+          </p>
+        </div>
       </div>
+
       <div className="ubah-password-card">
         <form onSubmit={handleSubmit}>
           <div className="form-group">

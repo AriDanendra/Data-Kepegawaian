@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import {
+  FaUsers, FaUserTie, FaUserClock, FaFileSignature,
+  FaUserTag, FaClinicMedical, FaHandshake
+} from 'react-icons/fa';
+import './AdminDashboard.css'; // Pastikan file CSS ini diimpor
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   
   const [stats, setStats] = useState({
     totalPegawai: 0,
-    pegawaiAktif: 0,
+    PNS: 0,
+    CPNS: 0,
+    PPPK: 0,
+    PTT: 0,
+    BLUD: 0,
+    PKS: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,11 +29,23 @@ const AdminDashboard = () => {
           throw new Error('Gagal mengambil data pegawai');
         }
         const allEmployees = await response.json();
-        const total = allEmployees.length;
-        setStats({
-          totalPegawai: total,
-          pegawaiAktif: total, // Asumsi semua pegawai yang terdata adalah aktif
+        
+        const statusCounts = { PNS: 0, CPNS: 0, PPPK: 0, PTT: 0, BLUD: 0, PKS: 0 };
+
+        allEmployees.forEach(employee => {
+          if (employee.riwayat && employee.riwayat.statusKepegawaian && employee.riwayat.statusKepegawaian.length > 0) {
+            const latestStatus = employee.riwayat.statusKepegawaian[0].status;
+            if (statusCounts.hasOwnProperty(latestStatus)) {
+              statusCounts[latestStatus]++;
+            }
+          }
         });
+
+        setStats({
+          totalPegawai: allEmployees.length,
+          ...statusCounts
+        });
+
       } catch (err) {
         setError(err.message);
         console.error("Fetch error:", err);
@@ -40,61 +62,80 @@ const AdminDashboard = () => {
   }
 
   return (
-    <main className="main-content">
-      <div className="welcome-header">
-        <h2>Dashboard Administrator</h2>
-        <p className="app-subtitle">
-          Sistem Informasi Manajemen Kepegawaian Rumah Sakit Regional dr. Hasri Ainun Habibie
-        </p>
-        <p className="description">
-          Selamat datang di panel kontrol. Kelola data dan monitor statistik kepegawaian.
-        </p>
-      </div>
-
-      <div className="profile-card">
-        <img 
-          src={user.profilePictureUrl || "/assets/profile-pic.jpg"}
-          alt="Foto Profil Admin" 
-          className="profile-picture" 
-        />
-        
-        <div className="profile-data">
-          <h3 className="employee-name">Selamat Datang, {user.name}</h3>
-          
-          <table>
-            <tbody>
-              <tr>
-                <td>Status Akun</td>
-                <td>: Administrator Sistem</td>
-              </tr>
-              {isLoading ? (
-                <tr><td colSpan="2">Memuat statistik...</td></tr>
-              ) : error ? (
-                 <tr><td colSpan="2" style={{color: 'red'}}>Gagal memuat statistik.</td></tr>
-              ) : (
-                <>
-                  <tr>
-                    <td>Total Pegawai Terdata</td>
-                    <td>: {stats.totalPegawai} Orang</td>
-                  </tr>
-                  <tr>
-                    <td>Pegawai Aktif</td>
-                    <td>: {stats.pegawaiAktif} Orang</td>
-                  </tr>
-                </>
-              )}
-              <tr><td colSpan="2">&nbsp;</td></tr>
-              <tr>
-                <td colSpan="2">
-                  Gunakan menu navigasi di samping untuk mengelola data pegawai, 
-                  melihat detail, dan melakukan manajemen data lainnya.
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    <div className="riwayat-container">
+      {/* MODIFIKASI DIMULAI DI SINI: Menggunakan struktur header yang sama */}
+      <div className="riwayat-header">
+        <div>
+          <h3>Dashboard Administrator</h3>
+          <p className="subtitle">Selamat datang kembali, {user.name}. Berikut adalah ringkasan data kepegawaian.</p>
         </div>
       </div>
-    </main>
+      {/* MODIFIKASI SELESAI */}
+
+      <div className="stats-grid">
+        {/* Total Pegawai */}
+        <div className="stat-card blue">
+          <div className="stat-icon"><FaUsers /></div>
+          <div className="stat-info">
+            <p>Total Pegawai</p>
+            <h3>{isLoading ? '...' : stats.totalPegawai}</h3>
+          </div>
+        </div>
+        {/* PNS */}
+        <div className="stat-card green">
+          <div className="stat-icon"><FaUserTie /></div>
+          <div className="stat-info">
+            <p>PNS</p>
+            <h3>{isLoading ? '...' : stats.PNS}</h3>
+          </div>
+        </div>
+        {/* CPNS */}
+        <div className="stat-card orange">
+          <div className="stat-icon"><FaUserClock /></div>
+          <div className="stat-info">
+            <p>CPNS</p>
+            <h3>{isLoading ? '...' : stats.CPNS}</h3>
+          </div>
+        </div>
+        {/* PPPK */}
+        <div className="stat-card purple">
+          <div className="stat-icon"><FaFileSignature /></div>
+          <div className="stat-info">
+            <p>PPPK</p>
+            <h3>{isLoading ? '...' : stats.PPPK}</h3>
+          </div>
+        </div>
+        {/* PTT */}
+        <div className="stat-card red">
+          <div className="stat-icon"><FaUserTag /></div>
+          <div className="stat-info">
+            <p>PTT</p>
+            <h3>{isLoading ? '...' : stats.PTT}</h3>
+          </div>
+        </div>
+        {/* BLUD */}
+        <div className="stat-card teal">
+          <div className="stat-icon"><FaClinicMedical /></div>
+          <div className="stat-info">
+            <p>BLUD</p>
+            <h3>{isLoading ? '...' : stats.BLUD}</h3>
+          </div>
+        </div>
+        {/* PKS */}
+        <div className="stat-card indigo">
+          <div className="stat-icon"><FaHandshake /></div>
+          <div className="stat-info">
+            <p>PKS</p>
+            <h3>{isLoading ? '...' : stats.PKS}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div className="additional-info-card">
+        <h4>Aktivitas Sistem</h4>
+        <p>Gunakan menu navigasi di samping untuk mengelola data master pegawai, melihat detail riwayat, dan melakukan manajemen data lainnya.</p>
+      </div>
+    </div>
   );
 };
 

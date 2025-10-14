@@ -1,86 +1,85 @@
-// src/pages/Dashboard.jsx (Disesuaikan)
-
 import React from 'react';
-import { useAuth } from '../context/AuthContext'; // Ditambahkan: Import useAuth
+import { useAuth } from '../context/AuthContext';
+import { FaUser, FaBriefcase, FaAward, FaCalendarAlt } from 'react-icons/fa';
+import './Dashboard.css'; // Pastikan CSS ini diimpor
 
-// Diubah: Hapus 'employee' dari props
 const Dashboard = () => {
-  // Ditambahkan: Ambil data user yang sedang login dari context
   const { user } = useAuth();
 
-  // Ditambahkan: Pengaman jika data user belum termuat
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Selamat Pagi';
+    if (hour < 15) return 'Selamat Siang';
+    if (hour < 18) return 'Selamat Sore';
+    return 'Selamat Malam';
+  };
+
+  const today = new Date().toLocaleDateString('id-ID', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+
   if (!user) {
     return <main className="main-content">Memuat data pengguna...</main>;
   }
   
-  // Perbaikan: Logika untuk menampilkan gambar yang sudah diunggah
   const profileImageUrl = user.profilePictureUrl && user.profilePictureUrl.startsWith('/public')
     ? `http://localhost:3001${user.profilePictureUrl}`
     : user.profilePictureUrl || "/assets/profile-pic.jpg";
 
-
   return (
-    <main className="main-content">
-      <div className="welcome-header">
-        <h2>Selamat Datang</h2>
-        <p className="app-subtitle">
-          Sistem Informasi Manajemen Kepegawaian Rumah Sakit Regional dr. Hasri Ainun Habibie
-        </p>
-        <p className="description">
-          Aplikasi ini dirancang untuk mengelola data kepegawaian secara efisien dan terpusat.
-        </p>
-      </div>
-
-      <div className="profile-card">
-        {/* Diubah: Gunakan profileImageUrl */}
-        <img src={profileImageUrl} alt="Foto Profil Pegawai" className="profile-picture" />
-        <div className="profile-data">
-          {/* Diubah: Semua 'employee' diganti menjadi 'user' */}
-          <h3 className="employee-name">Selamat Datang, {user.name.toUpperCase()}</h3>
-          <table>
-            <tbody>
-              <tr>
-                <td>NIP</td>
-                <td>: {user.nip}</td>
-              </tr>
-              <tr>
-                <td>Tempat/Tgl Lahir</td>
-                <td>: {user.ttl}</td>
-              </tr>
-              <tr>
-                <td>Agama</td>
-                <td>: {user.agama}</td>
-              </tr>
-              <tr>
-                <td>Suku</td>
-                <td>: {user.suku}</td>
-              </tr>
-              <tr>
-                <td>Alamat</td>
-                <td>: {user.alamat}</td>
-              </tr>
-              <tr><td colSpan="2">&nbsp;</td></tr>
-              <tr>
-                <td colSpan="2">{user.pendidikan}</td>
-              </tr>
-              <tr>
-                <td colSpan="2">{user.golongan}</td>
-              </tr>
-              <tr><td colSpan="2">&nbsp;</td></tr>
-              <tr>
-                <td>No.Hp/Telp</td>
-                <td>: {user.nomorHp}</td>
-              </tr>
-              <tr>
-                <td>Email</td>
-                <td>: {user.email}</td>
-              </tr>
-            </tbody>
-          </table>
+    // MODIFIKASI 1: Menggunakan .riwayat-container sebagai pembungkus utama
+    <div className="riwayat-container">
+      {/* MODIFIKASI 2: Menggunakan struktur .riwayat-header untuk judul */}
+      <div className="riwayat-header">
+        <div>
+          <h3>{getGreeting()}, {user.name.split(',')[0]}!</h3>
+          <p className="subtitle" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FaCalendarAlt /> {today}
+          </p>
         </div>
       </div>
-    </main>
+
+      <div className="stats-grid">
+        <div className="stat-card orange">
+          <div className="stat-icon"><FaBriefcase /></div>
+          <div className="stat-info">
+            <p>Jabatan Saat Ini</p>
+            <h3>{user.jabatan || '-'}</h3>
+          </div>
+        </div>
+        <div className="stat-card green">
+          <div className="stat-icon"><FaAward /></div>
+          <div className="stat-info">
+            <p>Golongan/Pangkat</p>
+            <h3>{user.golongan || '-'}</h3>
+          </div>
+        </div>
+      </div>
+
+      <div className="dashboard-profile-card">
+        <div className="profile-header">
+          <img src={profileImageUrl} alt="Foto Profil" className="profile-picture-dashboard" />
+          <div className="profile-info">
+            <h4>{user.name.toUpperCase()}</h4>
+            <p><FaUser /> NIP: {user.nip.includes('/') ? user.nip.split(' / ')[1] : user.nip}</p>
+          </div>
+        </div>
+        <div className="profile-details-grid">
+          <div><span>Tempat/Tgl Lahir:</span> {user.ttl}</div>
+          <div><span>Agama:</span> {user.agama}</div>
+          <div><span>Pendidikan Terakhir:</span> {user.pendidikan}</div>
+          <div><span>Instansi:</span> {user.instansi}</div>
+          <div><span>Email:</span> {user.email}</div>
+          <div><span>No. HP/Telp:</span> {user.nomorHp}</div>
+          <div className="alamat"><span>Alamat:</span> {user.alamat}</div>
+        </div>
+      </div>
+    </div>
   );
 };
 
 export default Dashboard;
+

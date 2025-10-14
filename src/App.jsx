@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import './App.css';
 
 // Context dan Halaman Login
-import { AuthProvider, useAuth } from './context/AuthContext'; // Impor useAuth
+import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './Pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -34,7 +34,7 @@ import AdminDashboard from './Pages/admin/AdminDashboard';
 import DaftarPegawai from './Pages/admin/DaftarPegawai';
 import PegawaiDetailPage from './Pages/admin/PegawaiDetailPage';
 
-// DIUBAH: MainLayout sekarang mengambil data user dari context
+// Layout Utama Aplikasi
 const MainLayout = () => {
   const { user } = useAuth(); // Ambil data pengguna dari context
   const [isSidebarOpen, setSidebarOpen] = React.useState(window.innerWidth > 768);
@@ -50,8 +50,8 @@ const MainLayout = () => {
     <div className="app-container">
       <Header toggleSidebar={toggleSidebar} />
       <div className="main-body-container">
-        {/* Teruskan data 'user' dari context ke Sidebar */}
-        <Sidebar employee={user} isOpen={isSidebarOpen} />
+        {/* Meneruskan fungsi toggleSidebar ke komponen Sidebar */}
+        <Sidebar employee={user} isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <div className="content-wrapper">
           <main className="main-content">
             <Outlet />
@@ -70,7 +70,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
 
-          {/* === RUTE UNTUK PEGAWAI (SUDAH TIDAK PAKAI MOCK) === */}
+          {/* Rute yang Dilindungi */}
           <Route
             path="/*"
             element={
@@ -79,7 +79,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* Hapus prop 'employee', karena komponen akan mengambil dari context */}
+            {/* Rute Pegawai */}
             <Route index element={<Dashboard />} />
             <Route path="profile" element={<ProfilePage />}>
               <Route index element={<div style={{textAlign: 'center', padding: '2rem', color: '#6c757d'}}><p>Silakan pilih menu di atas untuk melihat detail riwayat.</p></div>} />
@@ -99,7 +99,7 @@ function App() {
             <Route path="pemberitahuan" element={<Pemberitahuan />} />
             <Route path="ubah-password" element={<UbahPassword />} />
             
-            {/* Rute Admin dipindah ke dalam sini agar berbagi MainLayout */}
+            {/* Rute Admin */}
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="admin/daftar-pegawai" element={<DaftarPegawai />} />
             <Route path="admin/pegawai/detail/:employeeId" element={<PegawaiDetailPage />} />
