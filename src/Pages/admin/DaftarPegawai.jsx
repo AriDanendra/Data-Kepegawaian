@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaBriefcase } from 'react-icons/fa';
+import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaBriefcase, FaIdCard, FaLock } from 'react-icons/fa';
 import axios from 'axios';
 import Modal from '../../components/Modal';
 import SuccessModal from '../../components/SuccessModal';
@@ -28,11 +28,8 @@ const DaftarPegawai = () => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  // State untuk pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
-  // State untuk search
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchEmployees = async () => {
@@ -52,7 +49,6 @@ const DaftarPegawai = () => {
     fetchEmployees();
   }, []);
   
-  // Logika untuk filter dan search
   const filteredEmployees = useMemo(() => {
     if (!searchTerm) {
       return employees;
@@ -63,8 +59,6 @@ const DaftarPegawai = () => {
     );
   }, [employees, searchTerm]);
 
-
-  // Logika untuk pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
@@ -81,7 +75,6 @@ const DaftarPegawai = () => {
       setCurrentPage(currentPage - 1);
     }
   };
-
 
   const getProfileImageUrl = (employee) => {
     if (!employee || !employee.profilePictureUrl) return '/assets/profile-pic.jpg';
@@ -225,19 +218,26 @@ const DaftarPegawai = () => {
         </div>
       </div>
 
+      {/* === KARTU PEGAWAI YANG SUDAH DIMODIFIKASI === */}
       <div className="pegawai-card-grid">
         {currentItems.map((employee) => (
-          <div key={employee.id} className="pegawai-item-card profile-content-card">
+          <div key={employee.id} className="pegawai-item-card">
             <div className="pegawai-card-header">
               <img src={getProfileImageUrl(employee)} alt={employee.name} className="pegawai-foto-card" />
               <div className="pegawai-details">
                 <h4 className="employee-name">{employee.name}</h4>
-                <p className="pegawai-nip-card"><FaBriefcase className="icon-detail" /> {employee.jabatan}</p>
+                <p className="pegawai-jabatan-card">{employee.jabatan}</p>
               </div>
             </div>
             <div className="pegawai-card-body">
-              <div className="detail-item"><span className="detail-label">NIP:</span><span className="detail-value">{employee.nip && (employee.nip.includes('/') ? employee.nip.split(' / ')[1] : employee.nip)}</span></div>
-              <div className="detail-item"><span className="detail-label">Password:</span><span className="detail-value">{employee.password}</span></div>
+              <div className="detail-item">
+                <span className="detail-label"><FaIdCard className="icon-detail" /> NIP:</span>
+                <span className="detail-value">{employee.nip && (employee.nip.includes('/') ? employee.nip.split(' / ')[1] : employee.nip)}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label"><FaLock className="icon-detail" /> Password:</span>
+                <span className="detail-value">{employee.password}</span>
+              </div>
             </div>
             <div className="card-action-buttons">
               <button className="action-btn view" title="Lihat Detail Profil" onClick={() => handleOpenDetail(employee.id)}><FaEye /> Detail</button>
@@ -257,7 +257,7 @@ const DaftarPegawai = () => {
         </div>
       </div>
 
-
+      {/* Modal-modal tidak ada perubahan */}
       <Modal isOpen={isAddModalOpen} onClose={handleCloseModals} title="Tambah Pegawai Baru">
         <form onSubmit={handleSaveAdd}>
           <div className="modal-form-group"><label htmlFor="add-name">Nama Lengkap</label><input type="text" id="add-name" name="name" value={addFormData.name} onChange={handleAddFormChange} required /></div>

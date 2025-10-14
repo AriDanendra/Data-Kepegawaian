@@ -1,0 +1,135 @@
+/* === STYLING BARU UNTUK DAFTAR PEGAWAI YANG LEBIH ESTETIK === */
+
+/* 1. Grid Container */
+.pegawai-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+/* 2. Card Pegawai (Efek Hover & Shadow) */
+.pegawai-item-card {
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pegawai-item-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* 3. Header Card (Dengan Gradasi Oranye) */
+.pegawai-card-header {
+    background: linear-gradient(45deg, #ff8c00, #ffb347);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    min-height: 210px; 
+}
+
+.pegawai-foto-card {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.pegawai-details .employee-name {
+    margin: 0 0 5px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+}
+
+/* --- PERUBAHAN DI SINI --- */
+.pegawai-details .pegawai-jabatan-card {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Tambahkan baris ini untuk perataan tengah */
+    gap: 6px;
+}
+/* ------------------------- */
+
+/* 4. Body Card (Detail dengan Ikon) */
+.pegawai-card-body {
+    padding: 20px;
+    flex-grow: 1;
+}
+
+.pegawai-card-body .detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+}
+
+.pegawai-card-body .detail-label {
+    width: 110px; 
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    flex-shrink: 0; 
+}
+
+.pegawai-card-body .detail-label .icon-detail {
+    color: var(--accent-color);
+}
+
+.pegawai-card-body .detail-value {
+    color: var(--text-primary);
+    font-weight: 500;
+    word-break: break-all; 
+}
+
+/* 5. Tombol Aksi */
+.card-action-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 15px 20px;
+    margin-top: auto; 
+    background-color: #f8f9fa;
+    border-top: 1px solid var(--border-color);
+}
+
+.card-action-buttons .action-btn {
+    width: auto;
+    height: auto;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: opacity 0.2s;
+}
+
+.card-action-buttons .action-btn:hover {
+    opacity: 0.85;
+}
+
+.card-action-buttons .action-btn.view { background-color: #007bff; }
+.card-action-buttons .action-btn.edit { background-color: #ffc107; color: #333; }
+.card-action-buttons .action-btn.delete { background-color: #dc3545; }
