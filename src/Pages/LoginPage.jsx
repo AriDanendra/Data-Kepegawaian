@@ -7,9 +7,18 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const { login } = useAuth();
 
-  const handleSubmit = (e) => {
+  // 1. State untuk menyimpan pesan error sebagai string
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(username, password);
+    setErrorMessage(''); // Hapus pesan error lama setiap kali mencoba login
+    try {
+      await login(username, password);
+    } catch (error) {
+      // 2. Tangkap error dan set pesannya ke dalam state
+      setErrorMessage(error.message || 'Terjadi kesalahan saat login.');
+    }
   };
 
   return (
@@ -41,6 +50,14 @@ const LoginPage = () => {
               placeholder="Contoh: password"
             />
           </div>
+
+          {/* 3. Tampilkan pesan error di sini jika ada */}
+          {errorMessage && (
+            <div className="error-message-inline">
+              {errorMessage}
+            </div>
+          )}
+
           <button type="submit" className="login-button">
             Login
           </button>
