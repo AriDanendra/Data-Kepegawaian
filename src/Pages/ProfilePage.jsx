@@ -103,7 +103,7 @@ const ProfilePage = () => {
 
 
   if (!user) {
-    return <div className="main-content">Memuat data pegawai...</div>;
+    return <div className="riwayat-container">Memuat data pegawai...</div>;
   }
 
   const getProfileImageUrl = () => {
@@ -122,7 +122,13 @@ const ProfilePage = () => {
   const profileImageUrl = getProfileImageUrl();
 
   return (
-    <main className="main-content">
+    <div className="riwayat-container">
+      <div className="riwayat-header">
+        <div>
+          <h3>Profil Pegawai</h3>
+          <p className="subtitle">Halaman ini menampilkan informasi detail mengenai data kepegawaian Anda.</p>
+        </div>
+      </div>
       <div className="profile-page-container">
         <div className="profile-card">
           <button
@@ -239,7 +245,7 @@ const ProfilePage = () => {
           </div>
         </form>
       </Modal>
-    </main>
+    </div>
   );
 };
 
