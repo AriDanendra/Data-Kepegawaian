@@ -164,6 +164,7 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
+        onConfirm={() => window.location.reload()}
         message={successMessage}
       />
     </div>

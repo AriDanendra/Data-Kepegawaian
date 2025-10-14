@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+// Import useLocation untuk membaca URL
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   FaArrowLeft, FaUserTie, FaUsers, FaBriefcase, FaDollarSign,
@@ -40,7 +41,11 @@ const menuItems = [
 const PegawaiDetailPage = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('jabatan');
+  const location = useLocation(); // 1. Dapatkan objek lokasi
+
+  // 2. Tentukan tab awal dari URL hash, jika tidak ada, default ke 'jabatan'
+  const initialTab = location.hash.replace('#', '') || 'jabatan';
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const [employee, setEmployee] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +54,6 @@ const PegawaiDetailPage = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState(null);
 
-  // State dan Ref untuk upload foto
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
@@ -72,6 +76,13 @@ const PegawaiDetailPage = () => {
     fetchEmployee();
   }, [employeeId]);
   
+  // 3. Tambahkan fungsi untuk menangani klik tab
+  const handleTabClick = (tabKey) => {
+    setActiveTab(tabKey);
+    // Ganti URL hash tanpa me-refresh halaman
+    navigate(`#${tabKey}`, { replace: true });
+  };
+
   const getProfileImageUrl = (emp) => {
     if (preview) return preview;
     if (!emp || !emp.profilePictureUrl) return '/assets/profile-pic.jpg';
@@ -113,7 +124,6 @@ const PegawaiDetailPage = () => {
       const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}`, formData);
       setEmployee(response.data);
       
-      // Jika ada file yang dipilih, upload juga fotonya
       if (selectedFile) {
         await handleUploadPhoto();
       } else {
@@ -136,7 +146,7 @@ const PegawaiDetailPage = () => {
         uploadData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
-      setEmployee(response.data.user); // Update state pegawai dengan data terbaru dari server
+      setEmployee(response.data.user);
       alert('Perubahan berhasil disimpan (termasuk foto profil).');
       handleCloseEditModal();
     } catch (error) {
@@ -145,7 +155,6 @@ const PegawaiDetailPage = () => {
   };
 
   const renderContent = () => {
-    // ... (fungsi renderContent tidak berubah)
     const activeComponent = menuItems.find(item => item.key === activeTab);
     if (!activeComponent || !employee || !employee.riwayat) {
       return <div style={{ textAlign: 'center', padding: '2rem', color: '#6c757d' }}><p>Pilih menu di atas untuk melihat detail riwayat.</p></div>;
@@ -212,7 +221,8 @@ const PegawaiDetailPage = () => {
                 <button
                   key={item.key}
                   className={`menu-item ${activeTab === item.key ? 'active' : ''}`}
-                  onClick={() => setActiveTab(item.key)}
+                  // 4. Gunakan handler baru saat tombol tab diklik
+                  onClick={() => handleTabClick(item.key)}
                 >
                   <item.icon size={20} /> <span>{item.label}</span>
                 </button>

@@ -1,16 +1,40 @@
-// src/context/AuthContext.jsx (Perubahan untuk tidak menggunakan alert)
-
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true); // State loading untuk verifikasi
   const navigate = useNavigate();
 
+  // Efek ini berjalan sekali saat aplikasi dimuat untuk memeriksa token
+  useEffect(() => {
+    const verifyUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // Kirim token ke backend untuk diverifikasi
+          const response = await axios.get('http://localhost:3001/api/auth/verify', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          // Jika berhasil, set data pengguna
+          setUser(response.data.user);
+        } catch (error) {
+          console.error("Verifikasi token gagal:", error);
+          localStorage.removeItem('token'); // Hapus token jika tidak valid
+        }
+      }
+      setLoading(false); // Selesai loading, apa pun hasilnya
+    };
+
+    verifyUser();
+  }, []);
+
   const login = async (username, password) => {
-    // try-catch dipindahkan ke komponen LoginPage agar bisa mengontrol state modal
     const response = await fetch('http://localhost:3001/api/auth/login', {
       method: 'POST',
       headers: {
@@ -31,7 +55,6 @@ export const AuthProvider = ({ children }) => {
         navigate('/');
       }
     } else {
-      // Melemparkan error agar bisa ditangkap oleh komponen LoginPage
       throw new Error(data.message || 'Username atau Password salah!');
     }
   };
@@ -52,6 +75,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     isAuthenticated: !!user,
     user,
+    loading, // Kirim state loading ke komponen lain
     login,
     logout,
     updateUser,

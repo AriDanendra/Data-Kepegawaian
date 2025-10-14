@@ -3,21 +3,27 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
+
+  // Jika proses verifikasi token masih berjalan, jangan tampilkan apa-apa.
+  // Ini mencegah redirect prematur ke halaman login.
+  if (loading) {
+    return null; // Anda bisa juga menampilkan loading spinner di sini
+  }
 
   if (!isAuthenticated) {
-    // Jika belum login, selalu redirect ke halaman login
+    // Jika sudah selesai loading dan ternyata tidak terautentikasi,
+    // baru arahkan ke halaman login.
     return <Navigate to="/login" />;
   }
 
   // Jika sudah login, periksa apakah perannya diizinkan
   if (!allowedRoles.includes(user.role)) {
-    // Jika tidak diizinkan (misal: pegawai coba akses /admin),
-    // redirect juga ke halaman login
+    // Jika tidak diizinkan, arahkan ke halaman login
     return <Navigate to="/login" />;
   }
 
-  // Jika login dan peran diizinkan, tampilkan halamannya
+  // Jika semua kondisi terpenuhi, tampilkan halaman yang diminta
   return children;
 };
 

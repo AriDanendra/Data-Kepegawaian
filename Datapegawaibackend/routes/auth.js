@@ -62,4 +62,34 @@ router.post('/change-password', (req, res) => {
     res.json({ message: 'Password berhasil diubah' });
   });
 
+// Endpoint baru untuk verifikasi token
+router.get('/verify', (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1]; // Bearer <token>
+
+  if (!token) {
+    return res.status(401).json({ message: 'Token tidak tersedia' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    let user;
+
+    if (decoded.role === 'admin') {
+      user = adminUser;
+    } else {
+      user = allEmployees.find(emp => emp.id === decoded.id);
+    }
+
+    if (user) {
+      const userPayload = { ...user, role: decoded.role };
+      res.json({ user: userPayload });
+    } else {
+      res.status(404).json({ message: 'Pengguna tidak ditemukan' });
+    }
+  } catch (error) {
+    res.status(401).json({ message: 'Token tidak valid atau sudah kedaluwarsa' });
+  }
+});
+
+
 export default router;
