@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaBriefcase } from 'react-icons/fa';
 import axios from 'axios';
@@ -32,6 +32,9 @@ const DaftarPegawai = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  // State untuk search
+  const [searchTerm, setSearchTerm] = useState('');
+
   const fetchEmployees = async () => {
     setIsLoading(true);
     setError(null);
@@ -48,12 +51,24 @@ const DaftarPegawai = () => {
   useEffect(() => {
     fetchEmployees();
   }, []);
+  
+  // Logika untuk filter dan search
+  const filteredEmployees = useMemo(() => {
+    if (!searchTerm) {
+      return employees;
+    }
+    return employees.filter(employee =>
+      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.nip.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [employees, searchTerm]);
+
 
   // Logika untuk pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = employees.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(employees.length / itemsPerPage);
+  const currentItems = filteredEmployees.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
@@ -198,7 +213,16 @@ const DaftarPegawai = () => {
           </select>
           <span>entries</span>
         </div>
-        <div className="search-box"><label htmlFor="search">Search:</label><input type="search" id="search" /></div>
+        <div className="search-box">
+          <label htmlFor="search">Search:</label>
+          <input 
+            type="search" 
+            id="search" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Cari nama atau NIP..."
+          />
+        </div>
       </div>
 
       <div className="pegawai-card-grid">
@@ -225,7 +249,7 @@ const DaftarPegawai = () => {
       </div>
 
       <div className="table-footer">
-        <span>Showing {indexOfFirstItem + 1} to {indexOfLastItem > employees.length ? employees.length : indexOfLastItem} of {employees.length} entries</span>
+        <span>Showing {indexOfFirstItem + 1} to {indexOfLastItem > filteredEmployees.length ? filteredEmployees.length : indexOfLastItem} of {filteredEmployees.length} entries</span>
         <div className="pagination">
             <button onClick={handlePrevPage} disabled={currentPage === 1}>Previous</button>
             <button className="active">{currentPage}</button>
