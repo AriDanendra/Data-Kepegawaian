@@ -10,6 +10,7 @@ import {
   FaBalanceScale, FaPencilAlt
 } from 'react-icons/fa';
 import Modal from '../components/Modal';
+import SuccessModal from '../components/SuccessModal'; // 1. Impor SuccessModal
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -18,6 +19,10 @@ const ProfilePage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
+
+  // 2. State untuk mengontrol modal sukses
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleOpenEditModal = () => {
     setFormData(user);
@@ -46,6 +51,12 @@ const ProfilePage = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+  
+  // 3. Fungsi untuk menampilkan modal sukses
+  const showSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(true);
   };
 
   // Fungsi untuk mengunggah foto (dibuat terpisah untuk dipanggil)
@@ -76,6 +87,7 @@ const ProfilePage = () => {
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     if (!user || !user.id) {
+      // Ganti alert dengan modal error jika diperlukan di masa depan
       alert('Error: User data tidak ditemukan.');
       return;
     }
@@ -91,12 +103,14 @@ const ProfilePage = () => {
       if (selectedFile) {
         await handleUploadPhoto();
       }
-
-      alert('Profil berhasil diperbarui!');
+      
+      // 4. Ganti alert dengan modal sukses
+      showSuccessModal('Profil berhasil diperbarui!');
       handleCloseEditModal();
 
     } catch (error) {
       console.error('Gagal memperbarui profil:', error);
+      // Ganti alert dengan modal error jika diperlukan
       alert(error.message || 'Terjadi kesalahan saat memperbarui profil.');
     }
   };
@@ -245,6 +259,13 @@ const ProfilePage = () => {
           </div>
         </form>
       </Modal>
+
+      {/* 5. Tambahkan komponen SuccessModal di sini */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        message={successMessage}
+      />
     </div>
   );
 };

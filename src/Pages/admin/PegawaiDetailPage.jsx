@@ -10,6 +10,7 @@ import {
 import './DaftarPegawai.css';
 
 import Modal from '../../components/Modal';
+import SuccessModal from '../../components/SuccessModal'; // 1. Impor SuccessModal
 import DataKeluarga from '../profile/DataKeluarga';
 import DataKGB from '../profile/DataKGB';
 import RiwayatCuti from '../profile/RiwayatCuti';
@@ -57,6 +58,10 @@ const PegawaiDetailPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
+  
+  // 2. State untuk modal sukses
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const fetchEmployee = async () => {
     setIsLoading(true);
@@ -81,6 +86,12 @@ const PegawaiDetailPage = () => {
     setActiveTab(tabKey);
     // Ganti URL hash tanpa me-refresh halaman
     navigate(`#${tabKey}`, { replace: true });
+  };
+  
+  // 3. Fungsi untuk menampilkan modal sukses
+  const showSuccessModal = (message) => {
+    setSuccessMessage(message);
+    setIsSuccessModalOpen(true);
   };
 
   const getProfileImageUrl = (emp) => {
@@ -127,7 +138,8 @@ const PegawaiDetailPage = () => {
       if (selectedFile) {
         await handleUploadPhoto();
       } else {
-        alert(`Profil ${response.data.name} berhasil diperbarui!`);
+        // 4. Ganti alert dengan modal sukses
+        showSuccessModal(`Profil ${response.data.name} berhasil diperbarui!`);
         handleCloseEditModal();
       }
     } catch (err) {
@@ -147,7 +159,8 @@ const PegawaiDetailPage = () => {
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       setEmployee(response.data.user);
-      alert('Perubahan berhasil disimpan (termasuk foto profil).');
+      // 4. Ganti alert dengan modal sukses
+      showSuccessModal('Perubahan berhasil disimpan (termasuk foto profil).');
       handleCloseEditModal();
     } catch (error) {
       throw new Error("Gagal mengunggah foto.");
@@ -270,6 +283,13 @@ const PegawaiDetailPage = () => {
           </div>
         </form>
       </Modal>
+
+      {/* 5. Tambahkan komponen SuccessModal di sini */}
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        message={successMessage}
+      />
     </div>
   );
 };
