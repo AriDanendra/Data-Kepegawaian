@@ -113,7 +113,7 @@ body {
   flex-direction: column;
   flex-shrink: 0;
   width: 260px;
-  padding: 1.5rem 0;
+  padding-top: 0; /* Menghilangkan padding atas */
   background-color: var(--sidebar-bg);
   color: var(--text-primary);
   border-right: 1px solid var(--border-color);
@@ -125,19 +125,32 @@ body {
   margin-left: -260px;
 }
 
+/* Penataan baru untuk user profile */
 .user-profile {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 0 1.5rem 1.5rem 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
 }
 
 .user-profile .user-name {
   margin: 0;
   font-weight: 600;
-  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1.2;
+}
+
+.user-title {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin: 0;
 }
 
 .sidebar-close-btn {
@@ -147,7 +160,7 @@ body {
   color: var(--text-secondary);
   cursor: pointer;
   padding: 0;
-  line-height: 1;
+  line-height: 0.8; /* Menyesuaikan alignment vertikal */
   transition: color 0.2s, transform 0.2s;
 }
 
@@ -156,28 +169,58 @@ body {
   transform: rotate(90deg);
 }
 
+/* Kategori menu dengan jarak yang diperbaiki */
+.nav-category {
+  padding: 1rem 1.5rem 0.5rem 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Menghilangkan flex-grow untuk menghapus spasi ekstra */
 .nav-menu {
   list-style-type: none;
-  padding: 1rem 0;
+  padding: 0;
   margin: 0;
-  flex-grow: 1;
 }
 
 .nav-menu li a {
-  display: block;
-  padding: 0.9rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.8rem 1.5rem;
   color: var(--text-primary);
   text-decoration: none;
   font-weight: 500;
-  transition: background-color 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s, border-left 0.2s;
+  border-left: 3px solid transparent;
 }
 
-.nav-menu li a:hover,
+.nav-menu li a:hover {
+  background-color: #f8f9fa;
+  color: var(--text-primary);
+  border-left-color: var(--accent-color);
+}
+
 .nav-menu li a.active {
   background-color: var(--accent-color);
   color: white;
+  border-left-color: #e67e22;
 }
 
+.nav-menu li a svg {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s;
+}
+
+.nav-menu li a.active svg,
+.nav-menu li a:hover svg {
+  transform: scale(1.1);
+}
 /* --- 5. Buttons --- */
 .sidebar-toggle-btn {
   position: absolute;
