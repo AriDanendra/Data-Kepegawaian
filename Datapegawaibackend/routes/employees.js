@@ -3,6 +3,7 @@ import { allEmployees } from '../data.js';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const router = Router();
 
@@ -10,10 +11,17 @@ const router = Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Pastikan folder uploads ada
+const uploadDir = path.join(__dirname, '../public/uploads');
+if (!fs.existsSync(uploadDir)){
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+
 // Konfigurasi Multer untuk menyimpan file
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, '../public/uploads'));
+    cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -24,21 +32,19 @@ const storage = multer.diskStorage({
 });
 
 // Middleware upload untuk satu berkas dengan nama field 'berkas'
-const upload = multer({ storage: storage }).single('berkas');
+const upload = multer({ storage: storage });
 const uploadProfilePic = multer({ storage: storage }).single('profilePicture');
 
 
 // Helper function untuk menangani upload
 const handleUpload = (req, res, next) => {
-  upload(req, res, function (err) {
+  // Menggunakan 'berkas' sebagai nama field default
+  upload.single('berkas')(req, res, function (err) {
     if (err instanceof multer.MulterError) {
-      // A multer error occurred when uploading.
       return res.status(500).json({ message: "Multer error: " + err.message });
     } else if (err) {
-      // An unknown error occurred when uploading.
       return res.status(500).json({ message: "Unknown upload error: " + err.message });
     }
-    // Everything went fine.
     next();
   });
 };
@@ -158,7 +164,7 @@ const addHistory = (category) => (req, res) => {
         const newEntry = {
             id: Date.now(),
             ...req.body,
-            berkasUrl: req.file ? `/public/uploads/${req.file.filename}` : '#'
+            berkasUrl: req.file ? `/public/uploads/${req.file.filename}` : null
         };
         if (!allEmployees[employeeIndex].riwayat[category]) {
             allEmployees[employeeIndex].riwayat[category] = [];
@@ -174,15 +180,22 @@ const addHistory = (category) => (req, res) => {
 const updateHistory = (category) => (req, res) => {
     const employeeIndex = allEmployees.findIndex(emp => emp.id === parseInt(req.params.id));
     if (employeeIndex !== -1) {
-        const entryIndex = allEmployees[employeeIndex].riwayat[category]?.findIndex(item => item.id === parseInt(req.params.itemId));
+        // FIX: Menggunakan perbandingan '==' yang lebih longgar untuk mencocokkan ID (string vs number)
+        const entryIndex = allEmployees[employeeIndex].riwayat[category]?.findIndex(item => item.id == req.params.itemId);
+        
         if (entryIndex !== -1) {
+            const existingEntry = allEmployees[employeeIndex].riwayat[category][entryIndex];
             const updatedEntry = {
-                ...allEmployees[employeeIndex].riwayat[category][entryIndex],
+                ...existingEntry,
                 ...req.body
             };
+
             if (req.file) {
                 updatedEntry.berkasUrl = `/public/uploads/${req.file.filename}`;
+            } else {
+                updatedEntry.berkasUrl = existingEntry.berkasUrl;
             }
+
             allEmployees[employeeIndex].riwayat[category][entryIndex] = updatedEntry;
             res.json(updatedEntry);
         } else {
@@ -200,8 +213,9 @@ const deleteHistory = (category) => (req, res) => {
     if (employeeIndex !== -1) {
         const initialLength = allEmployees[employeeIndex].riwayat[category]?.length || 0;
         if (allEmployees[employeeIndex].riwayat[category]) {
+            // FIX: Menggunakan perbandingan '!=' yang lebih longgar
             allEmployees[employeeIndex].riwayat[category] = allEmployees[employeeIndex].riwayat[category].filter(
-                item => item.id !== parseInt(req.params.itemId)
+                item => item.id != req.params.itemId
             );
         }
         if (allEmployees[employeeIndex].riwayat[category]?.length < initialLength) {

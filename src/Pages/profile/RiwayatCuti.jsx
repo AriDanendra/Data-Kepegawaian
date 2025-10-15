@@ -1,11 +1,9 @@
-// src/Pages/profile/RiwayatCuti.jsx (Kode Final dengan Modal Sukses)
-
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
-import SuccessModal from '../../components/SuccessModal'; // 1. Impor modal sukses
+import SuccessModal from '../../components/SuccessModal';
 import { useAuth } from '../../context/AuthContext';
 
 const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
@@ -14,9 +12,9 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  // 2. State untuk mengontrol modal sukses
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -31,13 +29,14 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleOpenModal = (type, data = null) => {
     setModalType(type);
+    setSelectedFile(null); // Selalu reset file
     if (type === 'edit') {
       setSelectedData(data);
       setFormData(data);
     } else if (type === 'add') {
       setSelectedData(null);
       setFormData({ jenisCuti: '', nomorSurat: '', tanggalSurat: '', tanggalAwal: '', tanggalSelesai: '' });
-    } else {
+    } else { // 'delete'
       setSelectedData(data);
     }
     setIsModalOpen(true);
@@ -45,14 +44,21 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setModalType('');
+    setSelectedData(null);
+    setFormData(null);
+    setSelectedFile(null);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
+  
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
 
-  // 3. Fungsi untuk menampilkan modal sukses
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -60,19 +66,32 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
+    const dataToSend = new FormData();
+    Object.keys(formData).forEach(key => {
+        dataToSend.append(key, formData[key] || '');
+    });
+    if (selectedFile) {
+        dataToSend.append('berkas', selectedFile);
+    }
+
     try {
+      let response;
       if (modalType === 'add') {
-        const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/cuti`, formData);
+        response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/cuti`, dataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setCutiData([...cutiData, response.data]);
-        showSuccessModal(`Data cuti baru berhasil ditambahkan!`); // 4. Ganti alert
-      } else {
-        const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/cuti/${selectedData.id}`, formData);
+        showSuccessModal(`Data cuti baru berhasil ditambahkan!`);
+      } else { // 'edit'
+        response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/cuti/${selectedData.id}`, dataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setCutiData(cutiData.map(item => (item.id === selectedData.id ? response.data : item)));
-        showSuccessModal(`Data cuti berhasil diperbarui!`); // 4. Ganti alert
+        showSuccessModal(`Data cuti berhasil diperbarui!`);
       }
       handleCloseModal();
     } catch (error) {
-      console.error("Gagal menyimpan data cuti:", error);
+      console.error("Gagal menyimpan data cuti:", error.response ? error.response.data : error.message);
       alert("Terjadi kesalahan saat menyimpan data.");
     }
   };
@@ -81,7 +100,7 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${employeeId}/cuti/${selectedData.id}`);
       setCutiData(cutiData.filter(item => item.id !== selectedData.id));
-      showSuccessModal(`Data cuti telah dihapus!`); // 4. Ganti alert
+      showSuccessModal(`Data cuti telah dihapus!`);
       handleCloseModal();
     } catch (error) {
       console.error("Gagal menghapus data cuti:", error);
@@ -94,9 +113,25 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
     if (modalType === 'add') return 'Tambah Riwayat Cuti';
     return 'Konfirmasi Hapus';
   };
+
+  const getFileNameFromUrl = (url) => {
+    if (!url) return "Tidak ada file";
+    try {
+      const urlParts = url.split('/');
+      const lastPart = urlParts.pop();
+      const nameParts = lastPart.split('-');
+      if (nameParts.length > 3) return nameParts.slice(3).join('-');
+      return lastPart;
+    } catch {
+      return "Nama file tidak valid";
+    }
+  };
   
   const renderModalContent = () => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
+      const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `http://localhost:3001${formData.berkasUrl}` : null;
+      const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
+
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group"><label htmlFor="jenisCuti">Jenis Cuti</label><input type="text" id="jenisCuti" name="jenisCuti" value={formData.jenisCuti || ''} onChange={handleInputChange} required /></div>
@@ -104,7 +139,26 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
           <div className="modal-form-group"><label htmlFor="tanggalSurat">Tanggal Surat</label><input type="text" id="tanggalSurat" placeholder="dd-mm-yyyy" name="tanggalSurat" value={formData.tanggalSurat || ''} onChange={handleInputChange} /></div>
           <div className="modal-form-group"><label htmlFor="tanggalAwal">Tanggal Awal</label><input type="text" id="tanggalAwal" placeholder="dd-mm-yyyy" name="tanggalAwal" value={formData.tanggalAwal || ''} onChange={handleInputChange} /></div>
           <div className="modal-form-group"><label htmlFor="tanggalSelesai">Tanggal Selesai</label><input type="text" id="tanggalSelesai" placeholder="dd-mm-yyyy" name="tanggalSelesai" value={formData.tanggalSelesai || ''} onChange={handleInputChange} /></div>
-          <div className="modal-form-group"><label htmlFor="berkas">Upload Surat Izin Cuti (Opsional)</label><input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" /></div>
+          
+          <div className="modal-form-group">
+            <label>Upload Surat Izin Cuti (Opsional)</label>
+            {modalType === 'edit' && existingFileName && !selectedFile && (
+              <div className="current-file-info">
+                <FaFileAlt />
+                <span>{existingFileName}</span>
+                <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
+                  <FaDownload /> Unduh
+                </a>
+              </div>
+            )}
+            {selectedFile && (
+              <div className="current-file-info">
+                <FaFileAlt /> <span>File baru: {selectedFile.name}</span>
+              </div>
+            )}
+            <input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
+          </div>
+
           <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
         </form>
       );
@@ -145,7 +199,15 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.tanggalSurat}</td>
                 <td>{item.tanggalAwal}</td>
                 <td>{item.tanggalSelesai}</td>
-                <td><a href={item.berkasUrl} className="download-button" target="_blank" rel="noopener noreferrer">Download</a></td>
+                <td>
+                  {item.berkasUrl && item.berkasUrl !== '#' ? (
+                    <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                      Download
+                    </a>
+                  ) : (
+                    <span>-</span>
+                  )}
+                </td>
                 <td>
                   <div className="action-buttons">
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
@@ -160,11 +222,12 @@ const RiwayatCuti = ({ data: propData, employeeId: propEmployeeId }) => {
     
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
       
-      {/* 5. Tambahkan komponen modal sukses di sini */}
       <SuccessModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        onConfirm={() => window.location.reload()}
+        onClose={() => {
+            setIsSuccessModalOpen(false);
+            window.location.reload();
+        }}
         message={successMessage}
       />
     </div>

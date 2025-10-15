@@ -1,11 +1,9 @@
-// src/Pages/profile/DataKeluarga.jsx (Kode Final dengan Modal Sukses)
-
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
-import SuccessModal from '../../components/SuccessModal'; // 1. Impor modal sukses
+import SuccessModal from '../../components/SuccessModal';
 import { useAuth } from '../../context/AuthContext';
 
 const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
@@ -14,9 +12,9 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  // 2. State untuk mengontrol modal sukses
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -35,6 +33,7 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleOpenModal = (type, data = null) => {
     setModalType(type);
+    setSelectedFile(null);
     if (type.startsWith('edit')) {
       setSelectedData(data);
       setFormData(data);
@@ -51,6 +50,10 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setModalType(''); // <-- Perbaikan 1: Reset modalType
+    setFormData(null);
+    setSelectedData(null); // <-- Perbaikan 2: Reset selectedData
+    setSelectedFile(null);
   };
 
   const handleInputChange = (e) => {
@@ -58,7 +61,10 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-    // 3. Fungsi untuk menampilkan modal sukses
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -66,19 +72,32 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
+    const dataToSend = new FormData();
+    Object.keys(formData).forEach(key => {
+        dataToSend.append(key, formData[key] || ''); // Kirim string kosong jika null/undefined
+    });
+    if (selectedFile) {
+        dataToSend.append('berkas', selectedFile);
+    }
+    
     try {
+      let response;
       if (modalType.startsWith('add')) {
-        const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/keluarga`, formData);
+        response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/keluarga`, dataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setKeluargaData([...keluargaData, response.data]);
-        showSuccessModal('Data keluarga baru berhasil ditambahkan!'); // 4. Ganti alert
-      } else { // 'edit'
-        const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/keluarga/${selectedData.id}`, formData);
+        showSuccessModal('Data keluarga baru berhasil ditambahkan!');
+      } else {
+        response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/keluarga/${selectedData.id}`, dataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setKeluargaData(keluargaData.map(item => (item.id === selectedData.id ? response.data : item)));
-        showSuccessModal('Data keluarga berhasil diperbarui!'); // 4. Ganti alert
+        showSuccessModal('Data keluarga berhasil diperbarui!');
       }
       handleCloseModal();
     } catch (error) {
-      console.error("Gagal menyimpan data keluarga:", error);
+      console.error("Gagal menyimpan data keluarga:", error.response ? error.response.data : error.message);
       alert("Terjadi kesalahan saat menyimpan data.");
     }
   };
@@ -87,7 +106,7 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${employeeId}/keluarga/${selectedData.id}`);
       setKeluargaData(keluargaData.filter(item => item.id !== selectedData.id));
-      showSuccessModal('Data keluarga berhasil dihapus!'); // 4. Ganti alert
+      showSuccessModal('Data keluarga berhasil dihapus!');
       handleCloseModal();
     } catch (error) {
       console.error("Gagal menghapus data keluarga:", error);
@@ -100,118 +119,161 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
     if (modalType.startsWith('add')) return 'Tambah Data Keluarga';
     return 'Konfirmasi Hapus Data';
   };
+  
+  const getFileNameFromUrl = (url) => {
+    if (!url) return "Tidak ada file";
+    try {
+      const urlParts = url.split('/');
+      const lastPart = urlParts.pop();
+      const nameParts = lastPart.split('-');
+      if (nameParts.length > 3) return nameParts.slice(3).join('-');
+      return lastPart;
+    } catch {
+      return "Nama file tidak valid";
+    }
+  };
+
+  const renderFileInput = (berkasLabel) => {
+    const existingFileUrl = formData?.berkasUrl && formData.berkasUrl !== '#' ? `http://localhost:3001${formData.berkasUrl}` : null;
+    const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
+
+    return (
+        <div className="modal-form-group">
+            <label>{berkasLabel}</label>
+            {modalType.startsWith('edit') && existingFileName && !selectedFile && (
+                <div className="current-file-info">
+                    <FaFileAlt /> 
+                    <span>{existingFileName}</span>
+                    <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
+                        <FaDownload /> Unduh
+                    </a>
+                </div>
+            )}
+            {selectedFile && (
+                <div className="current-file-info">
+                    <FaFileAlt /> <span>File baru: {selectedFile.name}</span>
+                </div>
+            )}
+            <input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
+        </div>
+    );
+  };
 
   const renderModalContent = () => {
-    if (!formData && !selectedData) return null;
-
-    if (modalType.includes('pasangan') && (modalType.startsWith('add') || modalType.startsWith('edit'))) {
-      return (
-        <form onSubmit={handleSaveChanges}>
-          <div className="modal-form-group"><label>Nama Suami / Istri</label><input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
-          <div className="modal-form-group"><label>Tempat, Tgl. Lahir</label><input type="text" name="ttl" value={formData.ttl || ''} onChange={handleInputChange} /></div>
-          <div className="modal-form-group"><label>Tgl. Kawin</label><input type="text" name="tglKawin" placeholder="dd-mm-yyyy" value={formData.tglKawin || ''} onChange={handleInputChange} /></div>
-          <div className="modal-form-group"><label>Upload Berkas (Buku Nikah)</label><input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" /></div>
-          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
-        </form>
-      );
-    }
-    
-    if (modalType.includes('orangtua') && (modalType.startsWith('add') || modalType.startsWith('edit'))) {
+    // Perbaikan 3: Pindahkan pengecekan ke dalam setiap blok kondisi
+    if ((modalType.startsWith('add') || modalType.startsWith('edit')) && formData) {
+      if (modalType.includes('pasangan')) {
         return (
           <form onSubmit={handleSaveChanges}>
-            <div className="modal-form-group"><label>Status</label><select name="status" value={formData.status || ''} onChange={handleInputChange} required><option value="" disabled>Pilih Status</option><option value="Bapak Kandung">Bapak Kandung</option><option value="Ibu Kandung">Ibu Kandung</option></select></div>
-            <div className="modal-form-group"><label>Nama</label><input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
+            <div className="modal-form-group"><label>Nama Suami / Istri</label><input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
             <div className="modal-form-group"><label>Tempat, Tgl. Lahir</label><input type="text" name="ttl" value={formData.ttl || ''} onChange={handleInputChange} /></div>
-            <div className="modal-form-group"><label>Alamat</label><input type="text" name="alamat" value={formData.alamat || ''} onChange={handleInputChange} /></div>
-            <div className="modal-form-group"><label>Upload Berkas (Kartu Keluarga)</label><input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" /></div>
+            <div className="modal-form-group"><label>Tgl. Kawin</label><input type="text" name="tglKawin" placeholder="dd-mm-yyyy" value={formData.tglKawin || ''} onChange={handleInputChange} /></div>
+            {renderFileInput('Upload Berkas (Buku Nikah)')}
             <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
           </form>
         );
       }
-  
-      if (modalType.includes('anak') && (modalType.startsWith('add') || modalType.startsWith('edit'))) {
+      if (modalType.includes('orangtua')) {
+          return (
+            <form onSubmit={handleSaveChanges}>
+              <div className="modal-form-group"><label>Status</label><select name="status" value={formData.status || ''} onChange={handleInputChange} required><option value="" disabled>Pilih Status</option><option value="Bapak Kandung">Bapak Kandung</option><option value="Ibu Kandung">Ibu Kandung</option></select></div>
+              <div className="modal-form-group"><label>Nama</label><input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
+              <div className="modal-form-group"><label>Tempat, Tgl. Lahir</label><input type="text" name="ttl" value={formData.ttl || ''} onChange={handleInputChange} /></div>
+              <div className="modal-form-group"><label>Alamat</label><input type="text" name="alamat" value={formData.alamat || ''} onChange={handleInputChange} /></div>
+              {renderFileInput('Upload Berkas (Kartu Keluarga)')}
+              <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
+            </form>
+          );
+      }
+      if (modalType.includes('anak')) {
         return (
           <form onSubmit={handleSaveChanges}>
             <div className="modal-form-group"><label>Nama Anak</label><input type="text" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
             <div className="modal-form-group"><label>Tempat, Tgl. Lahir</label><input type="text" name="ttl" value={formData.ttl || ''} onChange={handleInputChange} /></div>
             <div className="modal-form-group"><label>Pendidikan</label><input type="text" name="pendidikan" value={formData.pendidikan || ''} onChange={handleInputChange} /></div>
-            <div className="modal-form-group"><label>Upload Berkas (Akta Lahir)</label><input type="file" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" /></div>
+            {renderFileInput('Upload Berkas (Akta Lahir)')}
             <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
           </form>
         );
       }
+    }
 
     if (modalType.startsWith('delete-') && selectedData) {
       return (
         <div><p>Anda yakin ingin menghapus data: <strong>{selectedData.nama}</strong>?</p><div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="button" className="btn btn-danger" onClick={handleDelete}>Hapus</button></div></div>
       );
     }
-    return null;
+    
+    return null; // Jika tidak ada kondisi yang cocok, jangan render apa-apa
+  };
+
+  const renderTable = (title, data, type) => {
+    const headers = {
+      pasangan: ['#', 'Nama', 'TTL', 'Tgl. Kawin', 'Berkas', 'Opsi'],
+      orangtua: ['#', 'Nama', 'Status', 'TTL', 'Alamat', 'Berkas', 'Opsi'],
+      anak: ['#', 'Nama', 'TTL', 'Pendidikan', 'Berkas', 'Opsi'],
+    };
+
+    const renderRow = (item, index) => {
+        const cells = {
+            pasangan: [index + 1, item.nama, item.ttl, item.tglKawin],
+            orangtua: [index + 1, item.nama, item.status, item.ttl, item.alamat],
+            anak: [index + 1, item.nama, item.ttl, item.pendidikan],
+        };
+        return (
+            <tr key={item.id}>
+                {cells[type].map((cell, i) => <td key={i}>{cell}</td>)}
+                <td>
+                    {item.berkasUrl && item.berkasUrl !== '#' ? (
+                        <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                            Download
+                        </a>
+                    ) : (
+                        <span>-</span>
+                    )}
+                </td>
+                <td>
+                    <div className="action-buttons">
+                        <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal(`edit-${type}`, item)}><FaPencilAlt /></button>
+                        <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal(`delete-${type}`, item)}><FaTrash /></button>
+                    </div>
+                </td>
+            </tr>
+        );
+    };
+
+    return (
+        <div className="riwayat-container">
+            <div className="riwayat-header">
+                <h3>{title}</h3>
+                <button className="add-button-icon" title={`Tambah Data ${title}`} onClick={() => handleOpenModal(`add-${type}`)}>
+                    <FaPencilAlt />
+                </button>
+            </div>
+            <div className="table-responsive-wrapper">
+                <table className="riwayat-table">
+                    <thead><tr>{headers[type].map((h, i) => <th key={i}>{h}</th>)}</tr></thead>
+                    <tbody>{data.map(renderRow)}</tbody>
+                </table>
+            </div>
+        </div>
+    );
   };
 
   return (
     <div className="data-keluarga-container">
-      {/* --- TABEL SUAMI / ISTRI --- */}
-      <div className="riwayat-container">
-        <div className="riwayat-header"><h3>Suami / Istri</h3><button className="add-button-icon" title="Tambah Data Suami/Istri" onClick={() => handleOpenModal('add-pasangan')}><FaPencilAlt /></button></div>
-        <div className="table-responsive-wrapper">
-          <table className="riwayat-table">
-            <thead><tr><th>#</th><th>Nama</th><th>TTL</th><th>Tgl. Kawin</th><th>Berkas</th><th>Opsi</th></tr></thead>
-            <tbody>
-              {dataSuamiIstri.map((item, index) => (
-                <tr key={item.id}>
-                  <td>{index + 1}</td><td>{item.nama}</td><td>{item.ttl}</td><td>{item.tglKawin}</td><td><a href={item.berkasUrl} className="download-button">Download</a></td>
-                  <td><div className="action-buttons"><button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit-pasangan', item)}><FaPencilAlt /></button><button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete-pasangan', item)}><FaTrash /></button></div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* --- TABEL ORANG TUA --- */}
-      <div className="riwayat-container">
-        <div className="riwayat-header"><h3>Ibu & Bapak Kandung</h3><button className="add-button-icon" title="Tambah Data Orang Tua" onClick={() => handleOpenModal('add-orangtua')}><FaPencilAlt /></button></div>
-        <div className="table-responsive-wrapper">
-          <table className="riwayat-table">
-            <thead><tr><th>#</th><th>Nama</th><th>Status</th><th>TTL</th><th>Alamat</th><th>Berkas</th><th>Opsi</th></tr></thead>
-            <tbody>
-              {dataOrangTua.map((item, index) => (
-                <tr key={item.id}>
-                  <td>{index + 1}</td><td>{item.nama}</td><td>{item.status}</td><td>{item.ttl}</td><td>{item.alamat}</td><td><a href={item.berkasUrl} className="download-button">Download</a></td>
-                  <td><div className="action-buttons"><button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit-orangtua', item)}><FaPencilAlt /></button><button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete-orangtua', item)}><FaTrash /></button></div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* --- TABEL ANAK --- */}
-      <div className="riwayat-container">
-        <div className="riwayat-header"><h3>Anak</h3><button className="add-button-icon" title="Tambah Data Anak" onClick={() => handleOpenModal('add-anak')}><FaPencilAlt /></button></div>
-        <div className="table-responsive-wrapper">
-          <table className="riwayat-table">
-            <thead><tr><th>#</th><th>Nama</th><th>TTL</th><th>Pendidikan</th><th>Berkas</th><th>Opsi</th></tr></thead>
-            <tbody>
-              {dataAnak.map((item, index) => (
-                <tr key={item.id}>
-                  <td>{index + 1}</td><td>{item.nama}</td><td>{item.ttl}</td><td>{item.pendidikan}</td><td><a href={item.berkasUrl} className="download-button">Download</a></td>
-                  <td><div className="action-buttons"><button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit-anak', item)}><FaPencilAlt /></button><button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete-anak', item)}><FaTrash /></button></div></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {renderTable('Suami / Istri', dataSuamiIstri, 'pasangan')}
+      {renderTable('Ibu & Bapak Kandung', dataOrangTua, 'orangtua')}
+      {renderTable('Anak', dataAnak, 'anak')}
       
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
 
-      {/* 5. Tambahkan komponen modal sukses di sini */}
       <SuccessModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        onConfirm={() => window.location.reload()}
+        onClose={() => {
+            setIsSuccessModalOpen(false);
+            window.location.reload();
+        }}
         message={successMessage}
       />
     </div>

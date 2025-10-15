@@ -1,11 +1,9 @@
-// src/Pages/profile/RiwayatOrganisasi.jsx (Kode Final dengan Modal Sukses)
-
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPencilAlt, FaTrash } from 'react-icons/fa';
+import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
-import SuccessModal from '../../components/SuccessModal'; // 1. Impor modal sukses
+import SuccessModal from '../../components/SuccessModal';
 import { useAuth } from '../../context/AuthContext';
 
 const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
@@ -14,9 +12,9 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
   const [modalType, setModalType] = useState('');
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
-  // 2. State untuk mengontrol modal sukses
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -31,13 +29,14 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleOpenModal = (type, dataItem = null) => {
     setModalType(type);
+    setSelectedFile(null); // Selalu reset file
     if (type === 'edit') {
       setSelectedData(dataItem);
       setFormData(dataItem);
     } else if (type === 'add') {
       setSelectedData(null);
       setFormData({ nama: '', jenis: '', jabatan: '', tempat: '' });
-    } else {
+    } else { // 'delete'
       setSelectedData(dataItem);
     }
     setIsModalOpen(true);
@@ -45,6 +44,10 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setModalType('');
+    setSelectedData(null);
+    setFormData(null);
+    setSelectedFile(null);
   };
 
   const handleInputChange = (e) => {
@@ -52,7 +55,10 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 3. Fungsi untuk menampilkan modal sukses
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -60,19 +66,32 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
+    const dataToSend = new FormData();
+    Object.keys(formData).forEach(key => {
+        dataToSend.append(key, formData[key] || '');
+    });
+    if (selectedFile) {
+        dataToSend.append('berkas', selectedFile);
+    }
+
     try {
+      let response;
       if (modalType === 'add') {
-        const response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/organisasi`, formData);
+        response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/organisasi`, dataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setOrganisasiData([...organisasiData, response.data]);
-        showSuccessModal(`Data organisasi baru berhasil ditambahkan!`); // 4. Ganti alert
+        showSuccessModal(`Data organisasi baru berhasil ditambahkan!`);
       } else {
-        const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/organisasi/${selectedData.id}`, formData);
+        response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/organisasi/${selectedData.id}`, dataToSend, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         setOrganisasiData(organisasiData.map(item => (item.id === selectedData.id ? response.data : item)));
-        showSuccessModal(`Data organisasi berhasil diperbarui!`); // 4. Ganti alert
+        showSuccessModal(`Data organisasi berhasil diperbarui!`);
       }
       handleCloseModal();
     } catch (error) {
-      console.error("Gagal menyimpan data organisasi:", error);
+      console.error("Gagal menyimpan data organisasi:", error.response ? error.response.data : error.message);
       alert("Terjadi kesalahan saat menyimpan data.");
     }
   };
@@ -81,7 +100,7 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       await axios.delete(`http://localhost:3001/api/employees/${employeeId}/organisasi/${selectedData.id}`);
       setOrganisasiData(organisasiData.filter(item => item.id !== selectedData.id));
-      showSuccessModal(`Data organisasi telah dihapus!`); // 4. Ganti alert
+      showSuccessModal(`Data organisasi telah dihapus!`);
       handleCloseModal();
     } catch (error) {
       console.error("Gagal menghapus data organisasi:", error);
@@ -94,16 +113,51 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
     if (modalType === 'add') return 'Tambah Riwayat Organisasi';
     return 'Konfirmasi Hapus';
   };
+
+  const getFileNameFromUrl = (url) => {
+    if (!url) return "Tidak ada file";
+    try {
+      const urlParts = url.split('/');
+      const lastPart = urlParts.pop();
+      const nameParts = lastPart.split('-');
+      if (nameParts.length > 3) return nameParts.slice(3).join('-');
+      return lastPart;
+    } catch {
+      return "Nama file tidak valid";
+    }
+  };
   
   const renderModalContent = () => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
+      const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `http://localhost:3001${formData.berkasUrl}` : null;
+      const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
+
       return (
         <form onSubmit={handleSaveChanges}>
           <div className="modal-form-group"><label htmlFor="nama">Nama Organisasi</label><input type="text" id="nama" name="nama" value={formData.nama || ''} onChange={handleInputChange} required /></div>
           <div className="modal-form-group"><label htmlFor="jenis">Jenis</label><input type="text" id="jenis" name="jenis" value={formData.jenis || ''} onChange={handleInputChange} /></div>
           <div className="modal-form-group"><label htmlFor="jabatan">Jabatan</label><input type="text" id="jabatan" name="jabatan" value={formData.jabatan || ''} onChange={handleInputChange} /></div>
           <div className="modal-form-group"><label htmlFor="tempat">Tempat</label><input type="text" id="tempat" name="tempat" value={formData.tempat || ''} onChange={handleInputChange} /></div>
-          <div className="modal-form-group"><label htmlFor="berkas">Upload Berkas Keanggotaan (Opsional)</label><input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" /></div>
+          
+          <div className="modal-form-group">
+            <label>Upload Berkas Keanggotaan (Opsional)</label>
+            {modalType === 'edit' && existingFileName && !selectedFile && (
+              <div className="current-file-info">
+                <FaFileAlt />
+                <span>{existingFileName}</span>
+                <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
+                  <FaDownload /> Unduh
+                </a>
+              </div>
+            )}
+            {selectedFile && (
+              <div className="current-file-info">
+                <FaFileAlt /> <span>File baru: {selectedFile.name}</span>
+              </div>
+            )}
+            <input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
+          </div>
+
           <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
         </form>
       );
@@ -143,7 +197,15 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.jenis}</td>
                 <td>{item.jabatan}</td>
                 <td>{item.tempat}</td>
-                <td><a href={item.berkasUrl} className="download-button">Download</a></td>
+                <td>
+                  {item.berkasUrl && item.berkasUrl !== '#' ? (
+                    <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                      Download
+                    </a>
+                  ) : (
+                    <span>-</span>
+                  )}
+                </td>
                 <td>
                   <div className="action-buttons">
                     <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
@@ -158,11 +220,12 @@ const RiwayatOrganisasi = ({ data: propData, employeeId: propEmployeeId }) => {
       
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
       
-      {/* 5. Tambahkan komponen modal sukses di sini */}
       <SuccessModal
         isOpen={isSuccessModalOpen}
-        onClose={() => setIsSuccessModalOpen(false)}
-        onConfirm={() => window.location.reload()}
+        onClose={() => {
+            setIsSuccessModalOpen(false);
+            window.location.reload();
+        }}
         message={successMessage}
       />
     </div>
