@@ -40,8 +40,8 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `nip`, `jabatan`, `golongan`, `profilePictureUrl`, `password`, `role`, `ttl`, `agama`, `suku`, `alamat`, `pendidikan`, `instansi`, `nomorHp`, `email`, `noKtp`, `noNpwp`, `noKarpeg`, `noKaris`, `noAskes`, `noTaspen`, `noRekening`) VALUES
-(1, 'Administrator', 'admin', NULL, NULL, '/assets/profile-pic.jpg', 'password', 'admin', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 'hj tunru, S.T.', '198804011990032010', 'Kepala Bagian Ketatausahaan, Humas dan Hukum', 'PEMBINA (IVa)', '/assets/profile-pic.jpg', '12345678', 'pegawai', 'Parepare, 01-04-1988', 'ISLAM', '-', 'Jl. Mattiro Jompi No. 5, Parepare', 'S.2 - MANAJEMEN PEMBANGUNAN DAERAH', 'UPT RUMAH SAKIT DR. HASRI AINUN HABIBIE', '08114225580', 'edwinzhoker@gmail.com', '7372010104880001', '12.345.678.9-012.000', 'J 123456', 'K 789012', '0001234567890', '9876543210', '123-456-7890 (Bank Sulselbar)');
+(1, 'Administrator', 'admin', NULL, NULL, '/assets/profile-pic.jpg', '$2b$10$f6.L.Lw.3.3j.j/A.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j', 'admin', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(2, 'hj tunru, S.T.', '198804011990032010', 'Kepala Bagian Ketatausahaan, Humas dan Hukum', 'PEMBINA (IVa)', '/assets/profile-pic.jpg', '$2b$10$f6.L.Lw.3.3j.j/A.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j.j', 'pegawai', 'Parepare, 01-04-1988', 'ISLAM', '-', 'Jl. Mattiro Jompi No. 5, Parepare', 'S.2 - MANAJEMEN PEMBANGUNAN DAERAH', 'UPT RUMAH SAKIT DR. HASRI AINUN HABIBIE', '08114225580', 'edwinzhoker@gmail.com', '7372010104880001', '12.345.678.9-012.000', 'J 123456', 'K 789012', '0001234567890', '9876543210', '123-456-7890 (Bank Sulselbar)');
 
 -- --------------------------------------------------------
 
@@ -63,7 +63,6 @@ CREATE TABLE `riwayat_cuti` (
   CONSTRAINT `riwayat_cuti_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- (Struktur tabel-tabel lainnya akan mengikuti pola yang sama)
 -- Riwayat Jabatan
 CREATE TABLE `riwayat_jabatan` (
   `id` INT NOT NULL AUTO_INCREMENT,
@@ -201,6 +200,19 @@ CREATE TABLE `riwayat_hukuman` (
     `noSk` VARCHAR(255),
     `tglSk` VARCHAR(255),
     `tmt` VARCHAR(255),
+    `berkasUrl` VARCHAR(255),
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Ditambahkan: Tabel Riwayat SIP & STR
+CREATE TABLE `riwayat_sip_str` (
+    `id` INT NOT NULL AUTO_INCREMENT,
+    `user_id` INT NOT NULL,
+    `jenis` ENUM('SIP', 'STR') NOT NULL,
+    `nomor` VARCHAR(255),
+    `tglTerbit` VARCHAR(255),
+    `tglBerlaku` VARCHAR(255),
     `berkasUrl` VARCHAR(255),
     PRIMARY KEY (`id`),
     FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE

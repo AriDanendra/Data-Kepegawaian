@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-// Import useLocation untuk membaca URL
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import {
   FaArrowLeft, FaUserTie, FaUsers, FaBriefcase, FaDollarSign,
   FaGraduationCap, FaChalkboardTeacher, FaAward, FaCalendarAlt,
-  FaSitemap, FaCheckSquare, FaBalanceScale, FaPencilAlt
+  FaSitemap, FaCheckSquare, FaBalanceScale, FaPencilAlt, FaFileMedical
 } from 'react-icons/fa';
 import './DaftarPegawai.css';
 
 import Modal from '../../components/Modal';
-import SuccessModal from '../../components/SuccessModal'; // 1. Impor SuccessModal
+import SuccessModal from '../../components/SuccessModal';
 import DataKeluarga from '../profile/DataKeluarga';
 import DataKGB from '../profile/DataKGB';
 import RiwayatCuti from '../profile/RiwayatCuti';
@@ -23,6 +22,7 @@ import RiwayatPenghargaan from '../profile/RiwayatPenghargaan';
 import RiwayatSKP from '../profile/RiwayatSKP';
 import RiwayatSKPPermenpan from '../profile/RiwayatSKPPermenpan';
 import StatusKepegawaian from '../profile/StatusKepegawaian';
+import RiwayatSipStr from '../profile/RiwayatSipStr'; // Komponen baru diimpor
 
 const menuItems = [
     { key: 'status', label: 'STATUS KEPEGAWAIAN', icon: FaUserTie, component: StatusKepegawaian },
@@ -33,6 +33,7 @@ const menuItems = [
     { key: 'diklat', label: 'RIWAYAT DIKLAT', icon: FaChalkboardTeacher, component: RiwayatDiklat },
     { key: 'penghargaan', label: 'RIWAYAT PENGHARGAAN', icon: FaAward, component: RiwayatPenghargaan },
     { key: 'cuti', label: 'RIWAYAT CUTI', icon: FaCalendarAlt, component: RiwayatCuti },
+    { key: 'sipstr', label: 'RIWAYAT SIP/STR', icon: FaFileMedical, component: RiwayatSipStr }, // Menu baru ditambahkan
     { key: 'organisasi', label: 'RIWAYAT ORGANISASI', icon: FaSitemap, component: RiwayatOrganisasi },
     { key: 'skp', label: 'RIWAYAT SKP', icon: FaCheckSquare, component: RiwayatSKP },
     { key: 'skp_permenpan', label: 'RIWAYAT SKP PERMENPAN', icon: FaCheckSquare, component: RiwayatSKPPermenpan },
@@ -42,9 +43,8 @@ const menuItems = [
 const PegawaiDetailPage = () => {
   const { employeeId } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // 1. Dapatkan objek lokasi
+  const location = useLocation();
 
-  // 2. Tentukan tab awal dari URL hash, jika tidak ada, default ke 'jabatan'
   const initialTab = location.hash.replace('#', '') || 'jabatan';
   const [activeTab, setActiveTab] = useState(initialTab);
 
@@ -59,7 +59,6 @@ const PegawaiDetailPage = () => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
   
-  // 2. State untuk modal sukses
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -81,14 +80,11 @@ const PegawaiDetailPage = () => {
     fetchEmployee();
   }, [employeeId]);
   
-  // 3. Tambahkan fungsi untuk menangani klik tab
   const handleTabClick = (tabKey) => {
     setActiveTab(tabKey);
-    // Ganti URL hash tanpa me-refresh halaman
     navigate(`#${tabKey}`, { replace: true });
   };
   
-  // 3. Fungsi untuk menampilkan modal sukses
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -138,7 +134,6 @@ const PegawaiDetailPage = () => {
       if (selectedFile) {
         await handleUploadPhoto();
       } else {
-        // 4. Ganti alert dengan modal sukses
         showSuccessModal(`Profil ${response.data.name} berhasil diperbarui!`);
         handleCloseEditModal();
       }
@@ -159,7 +154,6 @@ const PegawaiDetailPage = () => {
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
       setEmployee(response.data.user);
-      // 4. Ganti alert dengan modal sukses
       showSuccessModal('Perubahan berhasil disimpan (termasuk foto profil).');
       handleCloseEditModal();
     } catch (error) {
@@ -234,7 +228,6 @@ const PegawaiDetailPage = () => {
                 <button
                   key={item.key}
                   className={`menu-item ${activeTab === item.key ? 'active' : ''}`}
-                  // 4. Gunakan handler baru saat tombol tab diklik
                   onClick={() => handleTabClick(item.key)}
                 >
                   <item.icon size={20} /> <span>{item.label}</span>
@@ -284,7 +277,6 @@ const PegawaiDetailPage = () => {
         </form>
       </Modal>
 
-      {/* 5. Tambahkan komponen SuccessModal di sini */}
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}

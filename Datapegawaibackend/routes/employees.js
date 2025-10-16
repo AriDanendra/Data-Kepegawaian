@@ -3,11 +3,11 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
-import bcrypt from 'bcrypt'; // Pastikan bcrypt diimpor
+import bcrypt from 'bcrypt';
 import pool, { fetchAllRiwayat } from '../db.js';
 
 const router = Router();
-const SALT_ROUNDS = 10; // Faktor kompleksitas untuk hashing
+const SALT_ROUNDS = 10;
 
 // --- Konfigurasi Umum ---
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +21,6 @@ if (!fs.existsSync(uploadDir)) {
 // Fungsi untuk menghapus file lama dengan aman
 const deleteOldFile = (filePath) => {
   if (!filePath || filePath.includes('/assets/')) {
-    // Jangan hapus file default atau jika path tidak ada
     return;
   }
   const fullPath = path.join(__dirname, '..', filePath);
@@ -49,14 +48,12 @@ const upload = multer({ storage: storage });
 const handleUpload = upload.single('berkas');
 const uploadProfilePic = upload.single('profilePicture');
 
-
 // === ROUTES PEGAWAI (USERS) ===
 
 // GET: Semua pegawai
 router.get('/', async (req, res) => {
     try {
         const [employees] = await pool.query("SELECT * FROM users WHERE role = 'pegawai' ORDER BY id DESC");
-        // Hapus properti password sebelum mengirim ke frontend
         employees.forEach(emp => delete emp.password);
         res.json(employees);
     } catch (error) {
@@ -70,7 +67,7 @@ router.get('/:id', async (req, res) => {
         const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [req.params.id]);
         if (users.length > 0) {
             const user = users[0];
-            delete user.password; // Hapus password dari response
+            delete user.password;
             user.riwayat = await fetchAllRiwayat(user.id);
             res.json(user);
         } else {
@@ -85,9 +82,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const { name, nip, jabatan, golongan } = req.body;
     try {
-        // Enkripsi password default sebelum disimpan
         const hashedPassword = await bcrypt.hash('password123', SALT_ROUNDS);
-
         const [result] = await pool.query(
             'INSERT INTO users (name, nip, jabatan, golongan, password, role) VALUES (?, ?, ?, ?, ?, ?)',
             [name, nip, jabatan, golongan, hashedPassword, 'pegawai']
@@ -102,15 +97,14 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const updateData = { ...req.body };
-        // Hapus properti yang tidak seharusnya diupdate melalui endpoint ini
         delete updateData.riwayat;
-        delete updateData.password; // Mencegah password diubah tanpa validasi
+        delete updateData.password;
 
         const [result] = await pool.query('UPDATE users SET ? WHERE id = ?', [updateData, req.params.id]);
         if (result.affectedRows > 0) {
             const [updatedUsers] = await pool.query('SELECT * FROM users WHERE id = ?', [req.params.id]);
             const user = updatedUsers[0];
-            delete user.password; // Hapus password dari response
+            delete user.password;
             res.json(user);
         } else {
             res.status(404).json({ message: 'Pegawai tidak ditemukan' });
@@ -182,6 +176,7 @@ const riwayatTables = {
     skp: 'riwayat_skp',
     'skp-permenpan': 'riwayat_skp_permenpan',
     hukuman: 'riwayat_hukuman',
+    sipstr: 'riwayat_sip_str', // Ditambahkan
 };
 
 Object.keys(riwayatTables).forEach(key => {

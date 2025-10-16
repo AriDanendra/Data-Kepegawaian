@@ -7,10 +7,10 @@ import axios from 'axios';
 import {
   FaUserTie, FaUsers, FaBriefcase, FaDollarSign, FaGraduationCap,
   FaChalkboardTeacher, FaAward, FaCalendarAlt, FaSitemap, FaCheckSquare,
-  FaBalanceScale, FaPencilAlt
+  FaBalanceScale, FaPencilAlt, FaFileMedical // Ikon ditambahkan
 } from 'react-icons/fa';
 import Modal from '../components/Modal';
-import SuccessModal from '../components/SuccessModal'; // 1. Impor SuccessModal
+import SuccessModal from '../components/SuccessModal';
 
 const ProfilePage = () => {
   const { user, updateUser } = useAuth();
@@ -20,7 +20,6 @@ const ProfilePage = () => {
   const [preview, setPreview] = useState(null);
   const fileInputRef = useRef(null);
 
-  // 2. State untuk mengontrol modal sukses
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -53,7 +52,6 @@ const ProfilePage = () => {
     }
   };
   
-  // 3. Fungsi untuk menampilkan modal sukses
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -87,7 +85,6 @@ const ProfilePage = () => {
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     if (!user || !user.id) {
-      // Ganti alert dengan modal error jika diperlukan di masa depan
       alert('Error: User data tidak ditemukan.');
       return;
     }
@@ -104,13 +101,11 @@ const ProfilePage = () => {
         await handleUploadPhoto();
       }
       
-      // 4. Ganti alert dengan modal sukses
       showSuccessModal('Profil berhasil diperbarui!');
       handleCloseEditModal();
 
     } catch (error) {
       console.error('Gagal memperbarui profil:', error);
-      // Ganti alert dengan modal error jika diperlukan
       alert(error.message || 'Terjadi kesalahan saat memperbarui profil.');
     }
   };
@@ -192,6 +187,7 @@ const ProfilePage = () => {
               <NavLink to="/profile/diklat" className="menu-item"><FaChalkboardTeacher size={20} /> <span>RIWAYAT DIKLAT</span></NavLink>
               <NavLink to="/profile/penghargaan" className="menu-item"><FaAward size={20} /> <span>RIWAYAT PENGHARGAAN</span></NavLink>
               <NavLink to="/profile/cuti" className="menu-item"><FaCalendarAlt size={20} /> <span>RIWAYAT CUTI</span></NavLink>
+              <NavLink to="/profile/sipstr" className="menu-item"><FaFileMedical size={20} /> <span>RIWAYAT SIP/STR</span></NavLink>
               <NavLink to="/profile/organisasi" className="menu-item"><FaSitemap size={20} /> <span>RIWAYAT ORGANISASI</span></NavLink>
               <NavLink to="/profile/skp" className="menu-item"><FaCheckSquare size={20} /> <span>RIWAYAT SKP</span></NavLink>
               <NavLink to="/profile/skp-permenpan" className="menu-item"><FaCheckSquare size={20} /> <span>RIWAYAT SKP PERMENPAN</span></NavLink>
@@ -260,7 +256,6 @@ const ProfilePage = () => {
         </form>
       </Modal>
 
-      {/* 5. Tambahkan komponen SuccessModal di sini */}
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}

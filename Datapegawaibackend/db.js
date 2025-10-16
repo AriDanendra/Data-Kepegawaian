@@ -27,6 +27,7 @@ export const fetchAllRiwayat = async (userId) => {
         skp: 'riwayat_skp',
         skpPermenpan: 'riwayat_skp_permenpan',
         hukuman: 'riwayat_hukuman',
+        sipstr: 'riwayat_sip_str', // Ditambahkan
     };
 
     for (const key in tables) {

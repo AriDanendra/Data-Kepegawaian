@@ -14,18 +14,19 @@ import Sidebar from './components/Sidebar';
 // Halaman Pegawai
 import Dashboard from './Pages/Dashboard';
 import ProfilePage from './Pages/ProfilePage';
-import RiwayatJabatan from './pages/profile/RiwayatJabatan';
-import DataKeluarga from './pages/profile/DataKeluarga';
-import StatusKepegawaian from './pages/profile/StatusKepegawaian';
-import DataKGB from './pages/profile/DataKGB';
-import RiwayatPendidikan from './pages/profile/RiwayatPendidikan';
-import RiwayatDiklat from './pages/profile/RiwayatDiklat';
-import RiwayatPenghargaan from './pages/profile/RiwayatPenghargaan';
-import RiwayatCuti from './pages/profile/RiwayatCuti';
-import RiwayatOrganisasi from './pages/profile/RiwayatOrganisasi';
-import RiwayatSKP from './pages/profile/RiwayatSKP';
-import RiwayatSKPPermenpan from './pages/profile/RiwayatSKPPermenpan';
-import RiwayatHukuman from './pages/profile/RiwayatHukuman';
+import RiwayatJabatan from './Pages/profile/RiwayatJabatan';
+import DataKeluarga from './Pages/profile/DataKeluarga';
+import StatusKepegawaian from './Pages/profile/StatusKepegawaian';
+import DataKGB from './Pages/profile/DataKGB';
+import RiwayatPendidikan from './Pages/profile/RiwayatPendidikan';
+import RiwayatDiklat from './Pages/profile/RiwayatDiklat';
+import RiwayatPenghargaan from './Pages/profile/RiwayatPenghargaan';
+import RiwayatCuti from './Pages/profile/RiwayatCuti';
+import RiwayatOrganisasi from './Pages/profile/RiwayatOrganisasi';
+import RiwayatSKP from './Pages/profile/RiwayatSKP';
+import RiwayatSKPPermenpan from './Pages/profile/RiwayatSKPPermenpan';
+import RiwayatHukuman from './Pages/profile/RiwayatHukuman';
+import RiwayatSipStr from './Pages/profile/RiwayatSipStr'; // Diimpor
 import UbahPassword from './Pages/UbahPassword';
 
 // Halaman Admin
@@ -90,6 +91,7 @@ function App() {
               <Route path="diklat" element={<RiwayatDiklat />} />
               <Route path="penghargaan" element={<RiwayatPenghargaan />} />
               <Route path="cuti" element={<RiwayatCuti />} />
+              <Route path="sipstr" element={<RiwayatSipStr />} /> {/* Ditambahkan */}
               <Route path="organisasi" element={<RiwayatOrganisasi />} />
               <Route path="skp" element={<RiwayatSKP />} />
               <Route path="skp-permenpan" element={<RiwayatSKPPermenpan />} />
@@ -111,3 +113,4 @@ function App() {
 }
 
 export default App;
+
