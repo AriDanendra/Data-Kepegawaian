@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
-import pool, { fetchAllRiwayat } from '../db.js'; // Impor koneksi database
+import bcrypt from 'bcrypt'; // Impor bcrypt
+import pool, { fetchAllRiwayat } from '../db.js';
 
 const router = Router();
 const JWT_SECRET = 'your-secret-key';
+const SALT_ROUNDS = 10; // Faktor kompleksitas enkripsi
 
-// Fungsi untuk login (FIXED)
+// Fungsi untuk login
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -14,7 +16,6 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    // Kueri mencari berdasarkan 'nip'. Untuk admin, NIP-nya adalah 'admin'.
     const [users] = await pool.query('SELECT * FROM users WHERE nip = ?', [username]);
 
     if (users.length === 0) {
@@ -23,15 +24,15 @@ router.post('/login', async (req, res) => {
 
     const user = users[0];
 
-    // Cek password
-    if (user.password !== password) {
+    // Bandingkan password yang diinput dengan hash di database
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
       return res.status(401).json({ message: 'Username atau password salah' });
     }
     
-    // Hapus password dari objek user sebelum dikirim sebagai respons
     delete user.password;
     
-    // Jika bukan admin, ambil data riwayatnya
     if (user.role === 'pegawai') {
         user.riwayat = await fetchAllRiwayat(user.id);
     }
@@ -49,7 +50,6 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Terjadi kesalahan pada server' });
   }
 });
-
 
 // Endpoint untuk verifikasi token (Tetap sama)
 router.get('/verify', async (req, res) => {
@@ -81,7 +81,7 @@ router.get('/verify', async (req, res) => {
 });
 
 
-// Endpoint untuk mengubah password (Tetap sama)
+// Endpoint untuk mengubah password
 router.post('/change-password', async (req, res) => {
     const { userId, oldPassword, newPassword } = req.body;
 
@@ -94,11 +94,16 @@ router.post('/change-password', async (req, res) => {
 
         const user = users[0];
 
-        if (user.password !== oldPassword) {
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+
+        if (!isMatch) {
             return res.status(400).json({ message: 'Password lama salah' });
         }
 
-        await pool.query('UPDATE users SET password = ? WHERE id = ?', [newPassword, userId]);
+        // Hash password baru sebelum disimpan
+        const hashedNewPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+        await pool.query('UPDATE users SET password = ? WHERE id = ?', [hashedNewPassword, userId]);
 
         res.json({ message: 'Password berhasil diubah' });
 

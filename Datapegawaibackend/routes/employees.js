@@ -3,9 +3,11 @@ import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import bcrypt from 'bcrypt'; // Pastikan bcrypt diimpor
 import pool, { fetchAllRiwayat } from '../db.js';
 
 const router = Router();
+const SALT_ROUNDS = 10; // Faktor kompleksitas untuk hashing
 
 // --- Konfigurasi Umum ---
 const __filename = fileURLToPath(import.meta.url);
@@ -32,7 +34,7 @@ const deleteOldFile = (filePath) => {
   });
 };
 
-// Konfigurasi Multer (sama seperti sebelumnya)
+// Konfigurasi Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => {
@@ -50,11 +52,12 @@ const uploadProfilePic = upload.single('profilePicture');
 
 // === ROUTES PEGAWAI (USERS) ===
 
-// ... (Route GET, POST, PUT (data teks), dan DELETE untuk pegawai tidak berubah) ...
 // GET: Semua pegawai
 router.get('/', async (req, res) => {
     try {
         const [employees] = await pool.query("SELECT * FROM users WHERE role = 'pegawai' ORDER BY id DESC");
+        // Hapus properti password sebelum mengirim ke frontend
+        employees.forEach(emp => delete emp.password);
         res.json(employees);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -67,7 +70,7 @@ router.get('/:id', async (req, res) => {
         const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [req.params.id]);
         if (users.length > 0) {
             const user = users[0];
-            delete user.password;
+            delete user.password; // Hapus password dari response
             user.riwayat = await fetchAllRiwayat(user.id);
             res.json(user);
         } else {
@@ -82,9 +85,12 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
     const { name, nip, jabatan, golongan } = req.body;
     try {
+        // Enkripsi password default sebelum disimpan
+        const hashedPassword = await bcrypt.hash('password123', SALT_ROUNDS);
+
         const [result] = await pool.query(
             'INSERT INTO users (name, nip, jabatan, golongan, password, role) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, nip, jabatan, golongan, 'password123', 'pegawai']
+            [name, nip, jabatan, golongan, hashedPassword, 'pegawai']
         );
         res.status(201).json({ id: result.insertId, ...req.body });
     } catch (error) {
@@ -96,13 +102,15 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
     try {
         const updateData = { ...req.body };
+        // Hapus properti yang tidak seharusnya diupdate melalui endpoint ini
         delete updateData.riwayat;
+        delete updateData.password; // Mencegah password diubah tanpa validasi
 
         const [result] = await pool.query('UPDATE users SET ? WHERE id = ?', [updateData, req.params.id]);
         if (result.affectedRows > 0) {
             const [updatedUsers] = await pool.query('SELECT * FROM users WHERE id = ?', [req.params.id]);
             const user = updatedUsers[0];
-            delete user.password;
+            delete user.password; // Hapus password dari response
             res.json(user);
         } else {
             res.status(404).json({ message: 'Pegawai tidak ditemukan' });
@@ -112,11 +120,9 @@ router.put('/:id', async (req, res) => {
     }
 });
 
-
 // DELETE: Hapus pegawai
 router.delete('/:id', async (req, res) => {
     try {
-        // Ambil path foto profil sebelum menghapus user
         const [users] = await pool.query('SELECT profilePictureUrl FROM users WHERE id = ?', [req.params.id]);
         if (users.length > 0) {
             deleteOldFile(users[0].profilePictureUrl);
@@ -133,10 +139,7 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-
-// === MODIFIKASI DIMULAI DI SINI ===
-
-// POST: Upload foto profil (dengan logika hapus foto lama)
+// POST: Upload foto profil
 router.post('/:id/upload-profile-picture', uploadProfilePic, async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'Tidak ada file yang diunggah.' });
@@ -146,17 +149,13 @@ router.post('/:id/upload-profile-picture', uploadProfilePic, async (req, res) =>
   const employeeId = req.params.id;
 
   try {
-    // 1. Ambil path foto lama dari database
     const [users] = await pool.query('SELECT profilePictureUrl FROM users WHERE id = ?', [employeeId]);
     if (users.length > 0) {
-      // 2. Hapus foto lama
       deleteOldFile(users[0].profilePictureUrl);
     }
 
-    // 3. Update database dengan path foto baru
     await pool.query('UPDATE users SET profilePictureUrl = ? WHERE id = ?', [fileUrl, employeeId]);
     
-    // 4. Ambil data user terbaru dan kirim sebagai respons
     const [updatedUsers] = await pool.query('SELECT * FROM users WHERE id = ?', [employeeId]);
     const user = updatedUsers[0];
     delete user.password;
@@ -169,9 +168,7 @@ router.post('/:id/upload-profile-picture', uploadProfilePic, async (req, res) =>
   }
 });
 
-
 // === GENERIC ROUTES UNTUK SEMUA RIWAYAT ===
-
 const riwayatTables = {
     jabatan: 'riwayat_jabatan',
     pendidikan: 'riwayat_pendidikan',
@@ -190,7 +187,7 @@ const riwayatTables = {
 Object.keys(riwayatTables).forEach(key => {
     const tableName = riwayatTables[key];
 
-    // POST: Tambah riwayat baru (tidak perlu hapus file lama)
+    // POST: Tambah riwayat baru
     router.post(`/:id/${key}`, handleUpload, async (req, res) => {
         const data = { ...req.body, user_id: req.params.id };
         if (req.file) data.berkasUrl = `/public/uploads/${req.file.filename}`;
@@ -203,24 +200,19 @@ Object.keys(riwayatTables).forEach(key => {
         }
     });
 
-    // PUT: Update riwayat (dengan logika hapus file lama jika ada file baru)
+    // PUT: Update riwayat
     router.put(`/:id/${key}/:itemId`, handleUpload, async (req, res) => {
         const data = { ...req.body };
         
         try {
-            // Jika ada file BARU yang diunggah
             if (req.file) {
-                // 1. Ambil path file lama dari database
                 const [oldData] = await pool.query(`SELECT berkasUrl FROM ${tableName} WHERE id = ?`, [req.params.itemId]);
                 if (oldData.length > 0) {
-                    // 2. Hapus file lama
                     deleteOldFile(oldData[0].berkasUrl);
                 }
-                // 3. Tambahkan path file baru ke data yang akan di-update
                 data.berkasUrl = `/public/uploads/${req.file.filename}`;
             }
 
-            // 4. Update data di database
             const [result] = await pool.query(`UPDATE ${tableName} SET ? WHERE id = ? AND user_id = ?`, [data, req.params.itemId, req.params.id]);
             if (result.affectedRows > 0) {
                  const [updated] = await pool.query(`SELECT * FROM ${tableName} WHERE id = ?`, [req.params.itemId]);
@@ -233,17 +225,14 @@ Object.keys(riwayatTables).forEach(key => {
         }
     });
 
-    // DELETE: Hapus riwayat (beserta file terkait)
+    // DELETE: Hapus riwayat
     router.delete(`/:id/${key}/:itemId`, async (req, res) => {
         try {
-            // 1. Ambil path file dari database sebelum menghapus record
             const [oldData] = await pool.query(`SELECT berkasUrl FROM ${tableName} WHERE id = ?`, [req.params.itemId]);
             if (oldData.length > 0) {
-                // 2. Hapus file
                 deleteOldFile(oldData[0].berkasUrl);
             }
 
-            // 3. Hapus record dari database
             const [result] = await pool.query(`DELETE FROM ${tableName} WHERE id = ? AND user_id = ?`, [req.params.itemId, req.params.id]);
             if (result.affectedRows > 0) {
                 res.status(200).json({ message: 'Data berhasil dihapus' });
