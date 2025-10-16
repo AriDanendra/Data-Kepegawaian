@@ -28,20 +28,20 @@ const UbahPassword = () => {
       return;
     }
     
-    if (oldPassword !== user.password) {
-        setMessage({ type: 'error', text: 'Password lama yang Anda masukkan salah.' });
-        return;
-    }
+    // Pengecekan password lama di frontend DIHAPUS karena tidak aman.
+    // Validasi akan dilakukan sepenuhnya oleh backend.
 
     try {
         const response = await axios.post('http://localhost:3001/api/auth/change-password', {
             userId: user.id,
             oldPassword,
             newPassword,
-            role: user.role
         });
 
-        updateUser({ ...user, password: newPassword });
+        // Perbarui konteks pengguna dengan data baru jika diperlukan (opsional)
+        // Jika endpoint tidak mengembalikan user baru, Anda bisa refresh atau handle secara manual
+        // Untuk saat ini, kita anggap password di context tidak perlu langsung diupdate.
+        // updateUser({ ...user, password: newPassword }); // Baris ini bisa di-uncomment jika perlu, tapi kurang aman.
 
         setMessage({ type: 'success', text: response.data.message });
         setOldPassword('');
@@ -49,7 +49,7 @@ const UbahPassword = () => {
         setConfirmPassword('');
 
     } catch (error) {
-        setMessage({ type: 'error', text: error.response?.data?.message || 'Terjadi kesalahan' });
+        setMessage({ type: 'error', text: error.response?.data?.message || 'Terjadi kesalahan pada server.' });
     }
   };
 

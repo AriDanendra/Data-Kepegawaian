@@ -1,28 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import {
-  FaUsers, FaUserTie, FaUserClock, FaFileSignature,
-  FaUserTag, FaClinicMedical, FaHandshake
+  FaUsers, FaSitemap, FaCalendarCheck, FaUserEdit, FaExclamationCircle, FaBriefcase
 } from 'react-icons/fa';
-import './AdminDashboard.css'; // Pastikan file CSS ini diimpor
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   
   const [stats, setStats] = useState({
     totalPegawai: 0,
-    PNS: 0,
-    CPNS: 0,
-    PPPK: 0,
-    PTT: 0,
-    BLUD: 0,
-    PKS: 0,
+    totalJabatan: 0,
+    totalCuti: 0,
+    dataBelumLengkap: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchEmployeeStats = async () => {
+    const fetchDashboardStats = async () => {
       try {
         const response = await fetch('http://localhost:3001/api/employees');
         if (!response.ok) {
@@ -30,20 +26,22 @@ const AdminDashboard = () => {
         }
         const allEmployees = await response.json();
         
-        const statusCounts = { PNS: 0, CPNS: 0, PPPK: 0, PTT: 0, BLUD: 0, PKS: 0 };
-
-        allEmployees.forEach(employee => {
-          if (employee.riwayat && employee.riwayat.statusKepegawaian && employee.riwayat.statusKepegawaian.length > 0) {
-            const latestStatus = employee.riwayat.statusKepegawaian[0].status;
-            if (statusCounts.hasOwnProperty(latestStatus)) {
-              statusCounts[latestStatus]++;
-            }
-          }
-        });
+        // Menghitung total jabatan unik
+        const jabatanUnik = new Set(allEmployees.map(emp => emp.jabatan));
+        
+        // Menghitung total pengajuan cuti dari semua pegawai
+        const totalCuti = allEmployees.reduce((acc, emp) => {
+          return acc + (emp.riwayat?.cuti?.length || 0);
+        }, 0);
+        
+        // Menghitung pegawai dengan data belum lengkap (contoh: alamat atau no HP kosong)
+        const dataBelumLengkap = allEmployees.filter(emp => !emp.alamat || !emp.nomorHp).length;
 
         setStats({
           totalPegawai: allEmployees.length,
-          ...statusCounts
+          totalJabatan: jabatanUnik.size,
+          totalCuti: totalCuti,
+          dataBelumLengkap: dataBelumLengkap,
         });
 
       } catch (err) {
@@ -54,7 +52,7 @@ const AdminDashboard = () => {
       }
     };
 
-    fetchEmployeeStats();
+    fetchDashboardStats();
   }, []);
 
   if (!user) {
@@ -63,14 +61,12 @@ const AdminDashboard = () => {
 
   return (
     <div className="riwayat-container">
-      {/* MODIFIKASI DIMULAI DI SINI: Menggunakan struktur header yang sama */}
       <div className="riwayat-header">
         <div>
           <h3>Dashboard Administrator</h3>
           <p className="subtitle">Selamat datang kembali, {user.name}. Berikut adalah ringkasan data kepegawaian.</p>
         </div>
       </div>
-      {/* MODIFIKASI SELESAI */}
 
       <div className="stats-grid">
         {/* Total Pegawai */}
@@ -81,52 +77,28 @@ const AdminDashboard = () => {
             <h3>{isLoading ? '...' : stats.totalPegawai}</h3>
           </div>
         </div>
-        {/* PNS */}
+        {/* Total Jabatan */}
         <div className="stat-card green">
-          <div className="stat-icon"><FaUserTie /></div>
+          <div className="stat-icon"><FaBriefcase /></div>
           <div className="stat-info">
-            <p>PNS</p>
-            <h3>{isLoading ? '...' : stats.PNS}</h3>
+            <p>Total Jabatan</p>
+            <h3>{isLoading ? '...' : stats.totalJabatan}</h3>
           </div>
         </div>
-        {/* CPNS */}
+        {/* Total Pengajuan Cuti */}
         <div className="stat-card orange">
-          <div className="stat-icon"><FaUserClock /></div>
+          <div className="stat-icon"><FaCalendarCheck /></div>
           <div className="stat-info">
-            <p>CPNS</p>
-            <h3>{isLoading ? '...' : stats.CPNS}</h3>
+            <p>Total Pengajuan Cuti</p>
+            <h3>{isLoading ? '...' : stats.totalCuti}</h3>
           </div>
         </div>
-        {/* PPPK */}
-        <div className="stat-card purple">
-          <div className="stat-icon"><FaFileSignature /></div>
-          <div className="stat-info">
-            <p>PPPK</p>
-            <h3>{isLoading ? '...' : stats.PPPK}</h3>
-          </div>
-        </div>
-        {/* PTT */}
+        {/* Data Belum Lengkap */}
         <div className="stat-card red">
-          <div className="stat-icon"><FaUserTag /></div>
+          <div className="stat-icon"><FaExclamationCircle /></div>
           <div className="stat-info">
-            <p>PTT</p>
-            <h3>{isLoading ? '...' : stats.PTT}</h3>
-          </div>
-        </div>
-        {/* BLUD */}
-        <div className="stat-card teal">
-          <div className="stat-icon"><FaClinicMedical /></div>
-          <div className="stat-info">
-            <p>BLUD</p>
-            <h3>{isLoading ? '...' : stats.BLUD}</h3>
-          </div>
-        </div>
-        {/* PKS */}
-        <div className="stat-card indigo">
-          <div className="stat-icon"><FaHandshake /></div>
-          <div className="stat-info">
-            <p>PKS</p>
-            <h3>{isLoading ? '...' : stats.PKS}</h3>
+            <p>Data Belum Lengkap</p>
+            <h3>{isLoading ? '...' : stats.dataBelumLengkap}</h3>
           </div>
         </div>
       </div>
