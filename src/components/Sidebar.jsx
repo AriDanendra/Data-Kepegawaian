@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import { 
   FaTachometerAlt, 
   FaUserCircle, 
-  FaBell, 
   FaKey, 
   FaThList, 
   FaSignOutAlt 
@@ -64,7 +63,6 @@ const Sidebar = ({ employee, isOpen, toggleSidebar }) => {
       <ul className="nav-menu">
         <li><NavLink to="/" end><FaTachometerAlt /> Dashboard</NavLink></li>
         <li><NavLink to="/profile"><FaUserCircle /> Profile</NavLink></li>
-        <li><NavLink to="/pemberitahuan"><FaBell /> Pemberitahuan</NavLink></li>
       </ul>
       <span className="nav-category">Lainnya</span>
       <ul className="nav-menu">

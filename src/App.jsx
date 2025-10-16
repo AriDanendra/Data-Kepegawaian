@@ -26,7 +26,6 @@ import RiwayatOrganisasi from './pages/profile/RiwayatOrganisasi';
 import RiwayatSKP from './pages/profile/RiwayatSKP';
 import RiwayatSKPPermenpan from './pages/profile/RiwayatSKPPermenpan';
 import RiwayatHukuman from './pages/profile/RiwayatHukuman';
-import Pemberitahuan from './Pages/Pemberitahuan';
 import UbahPassword from './Pages/UbahPassword';
 
 // Halaman Admin
@@ -96,7 +95,6 @@ function App() {
               <Route path="skp-permenpan" element={<RiwayatSKPPermenpan />} />
               <Route path="hukuman" element={<RiwayatHukuman />} />
             </Route>
-            <Route path="pemberitahuan" element={<Pemberitahuan />} />
             <Route path="ubah-password" element={<UbahPassword />} />
             
             {/* Rute Admin */}
