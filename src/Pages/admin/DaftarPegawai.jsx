@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaBriefcase, FaIdCard, FaLock } from 'react-icons/fa';
+import { FaEye, FaPencilAlt, FaTrash, FaPlus, FaPhone, FaIdCard, FaLock } from 'react-icons/fa';
 import axios from 'axios';
 import Modal from '../../components/Modal';
 import SuccessModal from '../../components/SuccessModal';
@@ -235,8 +235,8 @@ const DaftarPegawai = () => {
                 <span className="detail-value">{employee.nip && (employee.nip.includes('/') ? employee.nip.split(' / ')[1] : employee.nip)}</span>
               </div>
               <div className="detail-item">
-                <span className="detail-label"><FaLock className="icon-detail" /> Password:</span>
-                <span className="detail-value">{employee.password}</span>
+                <span className="detail-label"><FaPhone className="icon-detail" /> No. HP:</span>
+                <span className="detail-value">{employee.nomorHp || '-'}</span>
               </div>
             </div>
             <div className="card-action-buttons">

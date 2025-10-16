@@ -27,22 +27,17 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     setDiklatData(initialData);
   }, [propData, context]);
 
-  // Filter data berdasarkan state lokal
-  const diklatStruktural = diklatData.filter(d => d.jenis === 'struktural');
-  const diklatFungsional = diklatData.filter(d => d.jenis === 'fungsional');
-  const diklatTeknis = diklatData.filter(d => d.jenis === 'teknis');
-
   const handleOpenModal = (type, data = null) => {
     setModalType(type);
-    setSelectedFile(null); // Selalu reset file
-    if (type.startsWith('edit')) {
+    setSelectedFile(null);
+    if (type === 'edit') {
       setSelectedData(data);
       setFormData(data);
-    } else if (type.startsWith('add')) {
+    } else if (type === 'add') {
       setSelectedData(null);
-      const jenisDiklat = type.split('-')[1]; 
-      setFormData({ jenis: jenisDiklat, namaDiklat: '', tempat: '', pelaksana: '', angkatan: '', tanggal: '' });
-    } else {
+      // Menghilangkan 'jenis' dari form data awal
+      setFormData({ namaDiklat: '', tempat: '', pelaksana: '', angkatan: '', tanggal: '' });
+    } else { // 'delete'
       setSelectedData(data);
     }
     setIsModalOpen(true);
@@ -82,7 +77,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     
     try {
       let response;
-      if (modalType.startsWith('add')) {
+      if (modalType === 'add') {
         response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/diklat`, dataToSend, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
@@ -115,8 +110,8 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
   };
   
   const getModalTitle = () => {
-    if (modalType.startsWith('edit')) return 'Edit Riwayat Diklat';
-    if (modalType.startsWith('add')) return 'Tambah Riwayat Diklat';
+    if (modalType === 'edit') return 'Edit Riwayat Diklat';
+    if (modalType === 'add') return 'Tambah Riwayat Diklat';
     return 'Konfirmasi Hapus Data';
   };
   
@@ -134,20 +129,13 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
   };
 
   const renderModalContent = () => {
-    if ((modalType.startsWith('edit-') || modalType.startsWith('add-')) && formData) {
+    if ((modalType === 'edit' || modalType === 'add') && formData) {
       const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `http://localhost:3001${formData.berkasUrl}` : null;
       const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
 
       return (
         <form onSubmit={handleSaveChanges}>
-          <div className="modal-form-group">
-            <label>Jenis Diklat</label>
-            <select name="jenis" value={formData.jenis || ''} onChange={handleInputChange} disabled={modalType.startsWith('add-')} required>
-                <option value="struktural">Struktural</option>
-                <option value="fungsional">Fungsional</option>
-                <option value="teknis">Teknis</option>
-            </select>
-          </div>
+          {/* Field 'Jenis Diklat' telah dihapus dari sini */}
           <div className="modal-form-group"><label>Nama Diklat</label><input type="text" name="namaDiklat" value={formData.namaDiklat || ''} onChange={handleInputChange} required /></div>
           <div className="modal-form-group"><label>Tempat</label><input type="text" name="tempat" value={formData.tempat || ''} onChange={handleInputChange} /></div>
           <div className="modal-form-group"><label>Pelaksana</label><input type="text" name="pelaksana" value={formData.pelaksana || ''} onChange={handleInputChange} /></div>
@@ -156,7 +144,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
           
           <div className="modal-form-group">
             <label>Upload Sertifikat (Opsional)</label>
-            {modalType.startsWith('edit') && existingFileName && !selectedFile && (
+            {modalType === 'edit' && existingFileName && !selectedFile && (
                 <div className="current-file-info">
                     <FaFileAlt />
                     <span>{existingFileName}</span>
@@ -178,7 +166,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
       );
     }
 
-    if (modalType.startsWith('delete-') && selectedData) {
+    if (modalType === 'delete' && selectedData) {
       return (
         <div>
           <p>Anda yakin ingin menghapus data diklat:</p>
@@ -190,57 +178,60 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     return null;
   };
 
-  const renderTable = (title, data, type) => {
-    return (
-        <div className="riwayat-container">
-            <div className="riwayat-header">
-                <h3>{title}</h3>
-                <button className="add-button-icon" title={`Tambah ${title}`} onClick={() => handleOpenModal(`add-${type}`)}>
-                    <FaPencilAlt />
-                </button>
-            </div>
-            <div className="table-responsive-wrapper">
-                <table className="riwayat-table">
-                    <thead>
-                        <tr><th>#</th><th>Nama Diklat</th><th>Tempat</th><th>Pelaksana</th><th>Angkatan</th><th>Tanggal</th><th>Berkas</th><th>Opsi</th></tr>
-                    </thead>
-                    <tbody>
-                        {data.map((item, index) => (
-                            <tr key={item.id}>
-                                <td>{index + 1}</td>
-                                <td>{item.namaDiklat}</td>
-                                <td>{item.tempat}</td>
-                                <td>{item.pelaksana}</td>
-                                <td>{item.angkatan}</td>
-                                <td>{item.tanggal}</td>
-                                <td>
-                                    {item.berkasUrl && item.berkasUrl !== '#' ? (
-                                        <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">Download</a>
-                                    ) : (
-                                        <span>-</span>
-                                    )}
-                                </td>
-                                <td>
-                                    <div className="action-buttons">
-                                        <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal(`edit-${type}`, item)}><FaPencilAlt /></button>
-                                        <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal(`delete-${type}`, item)}><FaTrash /></button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
-  };
-
-
   return (
-    <div className="riwayat-diklat-container">
-      {renderTable('Riwayat Diklat Struktural', diklatStruktural, 'struktural')}
-      {renderTable('Riwayat Diklat Fungsional', diklatFungsional, 'fungsional')}
-      {renderTable('Riwayat Diklat Teknis', diklatTeknis, 'teknis')}
+    <div className="riwayat-container">
+      <div className="riwayat-header">
+        <div>
+            <h3>Riwayat Diklat</h3>
+            <p className="subtitle">Informasi riwayat diklat yang pernah diikuti.</p>
+        </div>
+        <button className="add-button-icon" title="Tambah Riwayat Diklat" onClick={() => handleOpenModal('add')}>
+            <FaPencilAlt />
+        </button>
+      </div>
+      <div className="table-responsive-wrapper">
+          <table className="riwayat-table">
+              <thead>
+                  <tr>
+                    <th>#</th>
+                    {/* Kolom 'Jenis Diklat' telah dihapus */}
+                    <th>Nama Diklat</th>
+                    <th>Tempat</th>
+                    <th>Pelaksana</th>
+                    <th>Angkatan</th>
+                    <th>Tanggal</th>
+                    <th>Berkas</th>
+                    <th>Opsi</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {diklatData.map((item, index) => (
+                      <tr key={item.id}>
+                          <td>{index + 1}</td>
+                          {/* Sel untuk 'Jenis Diklat' telah dihapus */}
+                          <td>{item.namaDiklat}</td>
+                          <td>{item.tempat}</td>
+                          <td>{item.pelaksana}</td>
+                          <td>{item.angkatan}</td>
+                          <td>{item.tanggal}</td>
+                          <td>
+                              {item.berkasUrl && item.berkasUrl !== '#' ? (
+                                  <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">Download</a>
+                              ) : (
+                                  <span>-</span>
+                              )}
+                          </td>
+                          <td>
+                              <div className="action-buttons">
+                                  <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
+                                  <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
+                              </div>
+                          </td>
+                      </tr>
+                  ))}
+              </tbody>
+          </table>
+      </div>
       
       <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
 

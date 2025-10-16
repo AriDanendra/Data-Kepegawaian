@@ -63,8 +63,6 @@ CREATE TABLE `riwayat_cuti` (
   CONSTRAINT `riwayat_cuti_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- ... (tambahkan tabel riwayat lainnya dengan cara yang sama) ...
-
 -- (Struktur tabel-tabel lainnya akan mengikuti pola yang sama)
 -- Riwayat Jabatan
 CREATE TABLE `riwayat_jabatan` (
@@ -93,7 +91,6 @@ CREATE TABLE `riwayat_pendidikan` (
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- (Tambahkan semua tabel riwayat lainnya di sini...)
 CREATE TABLE `riwayat_kgb` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `user_id` INT NOT NULL,
@@ -139,7 +136,6 @@ CREATE TABLE `riwayat_keluarga` (
 CREATE TABLE `riwayat_diklat` (
     `id` INT NOT NULL AUTO_INCREMENT,
     `user_id` INT NOT NULL,
-    `jenis` VARCHAR(255),
     `namaDiklat` VARCHAR(255),
     `tempat` VARCHAR(255),
     `pelaksana` VARCHAR(255),
