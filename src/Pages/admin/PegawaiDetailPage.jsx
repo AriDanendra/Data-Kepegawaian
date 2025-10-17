@@ -14,7 +14,7 @@ import DataKeluarga from '../profile/DataKeluarga';
 import DataKGB from '../profile/DataKGB';
 import RiwayatCuti from '../profile/RiwayatCuti';
 import RiwayatDiklat from '../profile/RiwayatDiklat';
-import RiwayatHukuman from '../profile/RiwayatHukuman';
+import RiwayatHukuman from '../profile/RIwayatHukuman';
 import RiwayatJabatan from '../profile/RiwayatJabatan';
 import RiwayatOrganisasi from '../profile/RiwayatOrganisasi';
 import RiwayatPendidikan from '../profile/RiwayatPendidikan';
