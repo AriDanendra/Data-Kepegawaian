@@ -29,7 +29,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleOpenModal = (type, dataItem = null) => {
     setModalType(type);
-    setSelectedFile(null);
+    setSelectedFile(null); // Reset file input setiap modal dibuka
     if (type === 'edit') {
       setSelectedData(dataItem);
       setFormData(dataItem);
@@ -44,6 +44,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    // Reset state saat modal ditutup
     setFormData(null);
     setSelectedFile(null);
   };
@@ -57,6 +58,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
     setSelectedFile(e.target.files[0]);
   };
 
+
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -64,10 +66,14 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleSaveChanges = async (e) => {
     e.preventDefault();
+    
     const dataToSend = new FormData();
+    // Append semua data dari form state ke FormData
     Object.keys(formData).forEach(key => {
         dataToSend.append(key, formData[key]);
     });
+
+    // Jika ada file yang dipilih, tambahkan ke FormData
     if (selectedFile) {
         dataToSend.append('berkas', selectedFile);
     }
@@ -80,7 +86,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
             });
             setJabatanData([...jabatanData, response.data]);
             showSuccessModal(`Data jabatan baru berhasil ditambahkan!`);
-        } else {
+        } else { // 'edit'
             response = await axios.put(`/api/employees/${employeeId}/jabatan/${selectedData.id}`, dataToSend, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
@@ -112,11 +118,13 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
     return 'Konfirmasi Hapus Data';
   };
   
+  // Helper untuk mendapatkan nama file dari URL
   const getFileNameFromUrl = (url) => {
     if (!url) return "Tidak ada file";
     try {
       const urlParts = url.split('/');
       const lastPart = urlParts.pop();
+      // Menghapus timestamp dan prefix unik
       const nameParts = lastPart.split('-');
       if (nameParts.length > 3) {
         return nameParts.slice(3).join('-');
@@ -126,6 +134,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
       return "Nama file tidak valid";
     }
   };
+
 
   const renderModalContent = () => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
@@ -145,8 +154,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
               <div className="current-file-info">
                 <FaFileAlt /> 
                 <span>{existingFileName}</span>
-                {/* PERUBAHAN DI SINI */}
-                <a href={existingFileUrl} download className="download-button-small">
+                <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
                   <FaDownload /> Unduh
                 </a>
               </div>
@@ -197,8 +205,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.tmtJabatan}</td>
                 <td>
                   {item.berkasUrl && item.berkasUrl !== '#' ? (
-                    // PERUBAHAN DI SINI
-                    <a href={`${item.berkasUrl}`} className="download-button" download>
+                    <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
                       Download
                     </a>
                   ) : (
@@ -223,6 +230,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
         isOpen={isSuccessModalOpen}
         onClose={() => {
             setIsSuccessModalOpen(false);
+            // Tetap refresh halaman setelah modal ditutup
             window.location.reload();
         }}
         message={successMessage}
