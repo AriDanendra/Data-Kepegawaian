@@ -295,7 +295,7 @@ const DaftarPegawai = () => {
                 </div>
             </div>
             <div className="modal-form-group"><label htmlFor="nip">NIP</label><input type="text" id="nip" name="nip" value={editFormData.nip || ''} onChange={handleEditFormChange} /></div>
-            <div className="modal-form-group"><label htmlFor="password">Password</label><input type="text" id="password" name="password" value={editFormData.password || ''} onChange={handleEditFormChange} /></div>
+            <div className="modal-form-group"><label htmlFor="nomorHp">No. HP</label><input type="text" id="nomorHp" name="nomorHp" value={editFormData.nomorHp || ''} onChange={handleEditFormChange} /></div>
             <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModals}>Batal</button><button type="submit" className="btn btn-primary">Simpan Perubahan</button></div>
         </form>
       </Modal>
