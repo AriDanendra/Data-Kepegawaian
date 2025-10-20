@@ -1,14 +1,20 @@
+import 'dotenv/config'; // <-- TAMBAHKAN BARIS INI
 import mysql from 'mysql2/promise';
 
-// Buat koneksi pool ke database
+// Buat koneksi pool ke database menggunakan environment variables
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root', // default user XAMPP
-  password: '', // default password XAMPP
-  database: 'db_kepegawaian',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  port: process.env.DB_PORT,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  // Baris ini penting untuk koneksi aman ke Aiven
+  ssl: {
+    rejectUnauthorized: true,
+  },
 });
 
 // Fungsi untuk mengambil semua riwayat data untuk seorang pegawai
@@ -27,7 +33,7 @@ export const fetchAllRiwayat = async (userId) => {
         skp: 'riwayat_skp',
         skpPermenpan: 'riwayat_skp_permenpan',
         hukuman: 'riwayat_hukuman',
-        sipstr: 'riwayat_sip_str', // Ditambahkan
+        sipstr: 'riwayat_sip_str',
     };
 
     for (const key in tables) {

@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt'; // Impor bcrypt
 import pool, { fetchAllRiwayat } from '../db.js';
 
 const router = Router();
-const JWT_SECRET = 'your-secret-key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const SALT_ROUNDS = 10; // Faktor kompleksitas enkripsi
 
 // Fungsi untuk login
