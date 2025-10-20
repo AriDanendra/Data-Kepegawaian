@@ -176,7 +176,7 @@ const RiwayatSipStr = ({ data: propData, employeeId: propEmployeeId }) => {
               <div className="current-file-info">
                 <FaFileAlt />
                 <span>{existingFileName}</span>
-                <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
+                <a href={existingFileUrl} download className="download-button-small">
                   <FaDownload /> Unduh
                 </a>
               </div>
@@ -227,7 +227,7 @@ const RiwayatSipStr = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.tglBerlaku}</td>
                 <td>
                   {item.berkasUrl && item.berkasUrl !== '#' ? (
-                    <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                    <a href={`${item.berkasUrl}`} className="download-button" download>
                       Download
                     </a>
                   ) : (
