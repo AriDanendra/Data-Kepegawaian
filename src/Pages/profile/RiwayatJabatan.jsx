@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt, FaEye } from 'react-icons/fa'; // FaEye ditambahkan
+import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt, FaEye } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
@@ -147,7 +147,6 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
               <div className="current-file-info">
                 <FaFileAlt /> 
                 <span>{existingFileName}</span>
-                {/* MODIFIKASI: Link unduh di modal */}
                 <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
                   <FaDownload /> Unduh
                 </a>
@@ -198,35 +197,49 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.tglSk}</td>
                 <td>{item.tmtJabatan}</td>
                 <td>
-                  {item.berkasUrl && item.berkasUrl !== '#' ? (
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      {/* --- MODIFIKASI KUNCI DIMULAI DI SINI --- */}
+                  {item.berkasUrl && item.berkasUrl !== '#' ? (() => {
+                    const isPdf = item.berkasUrl.toLowerCase().endsWith('.pdf');
+                    let previewUrl = item.berkasUrl;
+                    let downloadUrl = item.berkasUrl;
 
-                      {/* Tombol untuk Melihat Pratinjau Gambar dari PDF */}
-                      <a 
-                        href={item.berkasUrl.replace('/upload/', '/upload/w_auto,h_600,c_limit,q_auto,f_jpg/')} 
-                        className="download-button" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ backgroundColor: '#17a2b8' }} 
-                      >
-                        <FaEye style={{ marginRight: '4px' }} />
-                        Lihat
-                      </a>
+                    if (isPdf) {
+                      // Untuk LIHAT: Ubah menjadi gambar, tapi biarkan tipe /image/
+                      previewUrl = item.berkasUrl.replace('/upload/', '/upload/f_jpg,w_600/');
+                      
+                      // Untuk UNDUH: Ganti tipe dari /image/ menjadi /raw/ dan tambahkan flag attachment
+                      downloadUrl = item.berkasUrl.replace('/image/upload/', '/raw/upload/fl_attachment/');
+                    } else {
+                      // Untuk gambar, cukup tambahkan flag attachment untuk unduh
+                      downloadUrl = item.berkasUrl.replace('/upload/', '/upload/fl_attachment/');
+                    }
 
-                      {/* Tombol untuk Mengunduh File Asli (PDF) */}
-                      <a 
-                        href={item.berkasUrl.replace('/upload/', '/upload/fl_attachment/')} 
-                        className="download-button" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                      >
-                        <FaDownload style={{ marginRight: '4px' }}/>
-                        Unduh
-                      </a>
-                      {/* --- MODIFIKASI KUNCI SELESAI --- */}
-                    </div>
-                  ) : (
+                    return (
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {/* Tombol Lihat */}
+                        <a 
+                          href={previewUrl}
+                          className="download-button" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ backgroundColor: '#17a2b8' }}
+                        >
+                          <FaEye style={{ marginRight: '4px' }} />
+                          Lihat
+                        </a>
+
+                        {/* Tombol Unduh */}
+                        <a 
+                          href={downloadUrl}
+                          className="download-button" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          <FaDownload style={{ marginRight: '4px' }}/>
+                          Unduh
+                        </a>
+                      </div>
+                    );
+                  })() : (
                     <span>-</span>
                   )}
                 </td>
