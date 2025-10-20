@@ -202,9 +202,9 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {/* --- MODIFIKASI KUNCI DIMULAI DI SINI --- */}
 
-                      {/* Tombol untuk Melihat Pratinjau (mengubah .pdf menjadi .jpg) */}
+                      {/* Tombol untuk Melihat Pratinjau Gambar dari PDF */}
                       <a 
-                        href={item.berkasUrl.replace('/upload/', '/upload/fl_attachment,f_jpg/')} 
+                        href={item.berkasUrl.replace('/upload/', '/upload/w_auto,h_600,c_limit,q_auto,f_jpg/')} 
                         className="download-button" 
                         target="_blank" 
                         rel="noopener noreferrer"
@@ -214,9 +214,9 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
                         Lihat
                       </a>
 
-                      {/* Tombol untuk Mengunduh File Asli */}
+                      {/* Tombol untuk Mengunduh File Asli (PDF) */}
                       <a 
-                        href={item.berkasUrl} 
+                        href={item.berkasUrl.replace('/upload/', '/upload/fl_attachment/')} 
                         className="download-button" 
                         target="_blank" 
                         rel="noopener noreferrer"
