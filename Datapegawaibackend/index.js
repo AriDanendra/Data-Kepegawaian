@@ -12,7 +12,9 @@ const PORT = 3001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const uploadDir = path.join(__dirname, 'public/uploads');
+// Use /tmp on Vercel, otherwise use local public/uploads
+const uploadDir = process.env.VERCEL ? '/tmp/uploads' : path.join(__dirname, 'public/uploads');
+
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -21,6 +23,11 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/public', express.static(path.join(__dirname, 'public')));
+
+// Conditionally serve from /tmp on Vercel
+if (process.env.VERCEL) {
+  app.use('/public/uploads', express.static(uploadDir));
+}
 
 app.use('/api/auth', authRoutes);
 app.use('/api/employees', employeeRoutes);
