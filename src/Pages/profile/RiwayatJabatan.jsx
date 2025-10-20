@@ -205,7 +205,11 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.tmtJabatan}</td>
                 <td>
                   {item.berkasUrl && item.berkasUrl !== '#' ? (
-                    <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                    <a 
+                      href={item.berkasUrl.replace('/upload/', '/upload/fl_attachment/')} 
+                      className="download-button" 
+                      target="_blank" 
+                      rel="noopener noreferrer">
                       Download
                     </a>
                   ) : (
