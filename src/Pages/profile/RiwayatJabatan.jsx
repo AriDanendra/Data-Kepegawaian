@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt, FaEye } from 'react-icons/fa';
+import { FaPencilAlt, FaSync, FaTrash, FaDownload, FaFileAlt } from 'react-icons/fa';
 import { useOutletContext } from 'react-router-dom';
 import axios from 'axios';
 import Modal from '../../components/Modal';
@@ -44,6 +44,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    // Reset state saat modal ditutup
     setFormData(null);
     setSelectedFile(null);
   };
@@ -57,6 +58,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
     setSelectedFile(e.target.files[0]);
   };
 
+
   const showSuccessModal = (message) => {
     setSuccessMessage(message);
     setIsSuccessModalOpen(true);
@@ -66,10 +68,12 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
     e.preventDefault();
     
     const dataToSend = new FormData();
+    // Append semua data dari form state ke FormData
     Object.keys(formData).forEach(key => {
         dataToSend.append(key, formData[key]);
     });
 
+    // Jika ada file yang dipilih, tambahkan ke FormData
     if (selectedFile) {
         dataToSend.append('berkas', selectedFile);
     }
@@ -114,11 +118,13 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
     return 'Konfirmasi Hapus Data';
   };
   
+  // Helper untuk mendapatkan nama file dari URL
   const getFileNameFromUrl = (url) => {
     if (!url) return "Tidak ada file";
     try {
       const urlParts = url.split('/');
       const lastPart = urlParts.pop();
+      // Menghapus timestamp dan prefix unik
       const nameParts = lastPart.split('-');
       if (nameParts.length > 3) {
         return nameParts.slice(3).join('-');
@@ -128,6 +134,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
       return "Nama file tidak valid";
     }
   };
+
 
   const renderModalContent = () => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
@@ -197,49 +204,11 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.tglSk}</td>
                 <td>{item.tmtJabatan}</td>
                 <td>
-                  {item.berkasUrl && item.berkasUrl !== '#' ? (() => {
-                    const isPdf = item.berkasUrl.toLowerCase().endsWith('.pdf');
-                    let previewUrl = item.berkasUrl;
-                    let downloadUrl = item.berkasUrl;
-
-                    if (isPdf) {
-                      // Untuk LIHAT: Ubah menjadi gambar, tapi biarkan tipe /image/
-                      previewUrl = item.berkasUrl.replace('/upload/', '/upload/f_jpg,w_600/');
-                      
-                      // Untuk UNDUH: Ganti tipe dari /image/ menjadi /raw/ dan tambahkan flag attachment
-                      downloadUrl = item.berkasUrl.replace('/image/upload/', '/raw/upload/fl_attachment/');
-                    } else {
-                      // Untuk gambar, cukup tambahkan flag attachment untuk unduh
-                      downloadUrl = item.berkasUrl.replace('/upload/', '/upload/fl_attachment/');
-                    }
-
-                    return (
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        {/* Tombol Lihat */}
-                        <a 
-                          href={previewUrl}
-                          className="download-button" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          style={{ backgroundColor: '#17a2b8' }}
-                        >
-                          <FaEye style={{ marginRight: '4px' }} />
-                          Lihat
-                        </a>
-
-                        {/* Tombol Unduh */}
-                        <a 
-                          href={downloadUrl}
-                          className="download-button" 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                        >
-                          <FaDownload style={{ marginRight: '4px' }}/>
-                          Unduh
-                        </a>
-                      </div>
-                    );
-                  })() : (
+                  {item.berkasUrl && item.berkasUrl !== '#' ? (
+                    <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                      Download
+                    </a>
+                  ) : (
                     <span>-</span>
                   )}
                 </td>
@@ -261,6 +230,7 @@ const RiwayatJabatan = ({ data: propData, employeeId: propEmployeeId }) => {
         isOpen={isSuccessModalOpen}
         onClose={() => {
             setIsSuccessModalOpen(false);
+            // Tetap refresh halaman setelah modal ditutup
             window.location.reload();
         }}
         message={successMessage}
