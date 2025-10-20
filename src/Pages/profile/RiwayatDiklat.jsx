@@ -6,14 +6,6 @@ import Modal from '../../components/Modal';
 import SuccessModal from '../../components/SuccessModal';
 import { useAuth } from '../../context/AuthContext';
 
-// Helper function to create a downloadable Cloudinary URL
-const createDownloadableUrl = (url) => {
-  if (!url || !url.includes('cloudinary.com')) {
-    return url;
-  }
-  return url.replace('/upload/', '/upload/fl_attachment/');
-};
-
 const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
   const [diklatData, setDiklatData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -156,7 +148,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
                 <div className="current-file-info">
                     <FaFileAlt />
                     <span>{existingFileName}</span>
-                    <a href={createDownloadableUrl(existingFileUrl)} download className="download-button-small">
+                    <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
                         <FaDownload /> Unduh
                     </a>
                 </div>
@@ -224,7 +216,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
                           <td>{item.tanggal}</td>
                           <td>
                               {item.berkasUrl && item.berkasUrl !== '#' ? (
-                                  <a href={createDownloadableUrl(item.berkasUrl)} className="download-button" download>Download</a>
+                                  <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">Download</a>
                               ) : (
                                   <span>-</span>
                               )}
