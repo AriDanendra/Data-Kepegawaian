@@ -36,7 +36,7 @@ const DaftarPegawai = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get('http://localhost:3001/api/employees');
+      const response = await axios.get('/api/employees');
       setEmployees(response.data);
     } catch (err) {
       setError(err.message);
@@ -79,7 +79,7 @@ const DaftarPegawai = () => {
   const getProfileImageUrl = (employee) => {
     if (!employee || !employee.profilePictureUrl) return '/assets/profile-pic.jpg';
     const baseUrl = employee.profilePictureUrl.startsWith('/public')
-      ? `http://localhost:3001${employee.profilePictureUrl}`
+      ? `${employee.profilePictureUrl}`
       : employee.profilePictureUrl;
     return `${baseUrl}?t=${new Date().getTime()}`;
   };
@@ -121,7 +121,7 @@ const DaftarPegawai = () => {
 
   const handleDeleteEmployee = async () => {
     try {
-      await axios.delete(`http://localhost:3001/api/employees/${selectedEmployee.id}`);
+      await axios.delete(`/api/employees/${selectedEmployee.id}`);
       showSuccessModal(`Data pegawai "${selectedEmployee.name}" berhasil dihapus.`);
       setEmployees(employees.filter(emp => emp.id !== selectedEmployee.id));
       handleCloseModals();
@@ -133,13 +133,13 @@ const DaftarPegawai = () => {
   const handleSaveEdit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`http://localhost:3001/api/employees/${selectedEmployee.id}`, editFormData);
+      const response = await axios.put(`/api/employees/${selectedEmployee.id}`, editFormData);
 
       if (selectedFile) {
         const uploadData = new FormData();
         uploadData.append('profilePicture', selectedFile);
         await axios.post(
-          `http://localhost:3001/api/employees/${selectedEmployee.id}/upload-profile-picture`,
+          `/api/employees/${selectedEmployee.id}/upload-profile-picture`,
           uploadData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         );
@@ -157,7 +157,7 @@ const DaftarPegawai = () => {
   const handleSaveAdd = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:3001/api/employees', addFormData);
+      await axios.post('/api/employees', addFormData);
       showSuccessModal(`Pegawai baru "${addFormData.name}" berhasil ditambahkan.`);
       await fetchEmployees();
       handleCloseModals();

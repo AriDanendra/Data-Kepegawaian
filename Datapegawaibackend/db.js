@@ -1,14 +1,21 @@
 import mysql from 'mysql2/promise';
+import dotenv from 'dotenv';
 
-// Buat koneksi pool ke database
+dotenv.config();
+
+// Buat koneksi pool ke database menggunakan variabel environment
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root', // default user XAMPP
-  password: '', // default password XAMPP
-  database: 'db_kepegawaian',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_DATABASE,
+  port: process.env.DB_PORT,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
+  ssl: {
+    rejectUnauthorized: true,
+  },
 });
 
 // Fungsi untuk mengambil semua riwayat data untuk seorang pegawai

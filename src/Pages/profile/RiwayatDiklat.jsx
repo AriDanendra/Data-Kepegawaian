@@ -78,13 +78,13 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       let response;
       if (modalType === 'add') {
-        response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/diklat`, dataToSend, {
+        response = await axios.post(`/api/employees/${employeeId}/diklat`, dataToSend, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setDiklatData([...diklatData, response.data]);
         showSuccessModal(`Data diklat baru berhasil ditambahkan!`);
       } else { // 'edit'
-        response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/diklat/${selectedData.id}`, dataToSend, {
+        response = await axios.put(`/api/employees/${employeeId}/diklat/${selectedData.id}`, dataToSend, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setDiklatData(diklatData.map(item => (item.id === selectedData.id ? response.data : item)));
@@ -99,7 +99,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`http://localhost:3001/api/employees/${employeeId}/diklat/${selectedData.id}`);
+      await axios.delete(`/api/employees/${employeeId}/diklat/${selectedData.id}`);
       setDiklatData(diklatData.filter(item => item.id !== selectedData.id));
       showSuccessModal(`Data diklat telah dihapus!`);
       handleCloseModal();
@@ -130,7 +130,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const renderModalContent = () => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
-      const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `http://localhost:3001${formData.berkasUrl}` : null;
+      const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `${formData.berkasUrl}` : null;
       const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
 
       return (
@@ -216,7 +216,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
                           <td>{item.tanggal}</td>
                           <td>
                               {item.berkasUrl && item.berkasUrl !== '#' ? (
-                                  <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">Download</a>
+                                  <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">Download</a>
                               ) : (
                                   <span>-</span>
                               )}

@@ -20,7 +20,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/employees');
+        const response = await fetch('/api/employees');
         if (!response.ok) {
           throw new Error('Gagal mengambil data pegawai');
         }
