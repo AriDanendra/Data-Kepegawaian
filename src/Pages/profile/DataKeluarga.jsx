@@ -144,7 +144,7 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
                 <div className="current-file-info">
                     <FaFileAlt /> 
                     <span>{existingFileName}</span>
-                    <a href={existingFileUrl} download className="download-button-small">
+                    <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
                         <FaDownload /> Unduh
                     </a>
                 </div>
@@ -225,7 +225,7 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
                 {cells[type].map((cell, i) => <td key={i}>{cell}</td>)}
                 <td>
                     {item.berkasUrl && item.berkasUrl !== '#' ? (
-                        <a href={`${item.berkasUrl}`} className="download-button" download>
+                        <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
                             Download
                         </a>
                     ) : (
