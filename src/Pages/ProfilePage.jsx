@@ -7,7 +7,7 @@ import axios from 'axios';
 import {
   FaUserTie, FaUsers, FaBriefcase, FaDollarSign, FaGraduationCap,
   FaChalkboardTeacher, FaAward, FaCalendarAlt, FaSitemap, FaCheckSquare,
-  FaBalanceScale, FaPencilAlt, FaFileMedical
+  FaBalanceScale, FaPencilAlt, FaFileMedical // Ikon ditambahkan
 } from 'react-icons/fa';
 import Modal from '../components/Modal';
 import SuccessModal from '../components/SuccessModal';
@@ -57,37 +57,27 @@ const ProfilePage = () => {
     setIsSuccessModalOpen(true);
   };
 
-  // --- MODIFIKASI DIMULAI DI SINI ---
-  // Fungsi untuk mengunggah foto menggunakan Vercel Blob
+  // Fungsi untuk mengunggah foto (dibuat terpisah untuk dipanggil)
   const handleUploadPhoto = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile) return; // Keluar jika tidak ada file
 
+    const uploadData = new FormData();
+    uploadData.append('profilePicture', selectedFile);
     try {
-      // Menggunakan fetch API untuk mengirim file
-      const response = await fetch(
+      const response = await axios.post(
         `/api/employees/${user.id}/upload-profile-picture`,
+        uploadData,
         {
-          method: 'POST',
           headers: {
-            // Header ini penting untuk Vercel Blob
-            'x-vercel-filename': selectedFile.name,
-            'Content-Type': selectedFile.type,
+            'Content-Type': 'multipart/form-data',
           },
-          body: selectedFile, // Kirim file langsung di body
         }
       );
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Gagal mengunggah foto.");
-      }
-      
-      const data = await response.json();
       // Perbarui user context setelah upload berhasil
-      updateUser(data.user);
+      updateUser(response.data.user);
     } catch (error) {
       // Lemparkan error agar bisa ditangkap oleh handleSaveChanges
-      throw new Error("Gagal mengunggah foto: " + error.message);
+      throw new Error("Gagal mengunggah foto.");
     }
   };
 
@@ -99,14 +89,14 @@ const ProfilePage = () => {
       return;
     }
     try {
-      // 1. Update data teks terlebih dahulu menggunakan axios
+      // 1. Update data teks terlebih dahulu
       const response = await axios.put(
         `/api/employees/${user.id}`,
         formData
       );
       updateUser(response.data); // Update context dengan data teks baru
 
-      // 2. Jika ada file foto yang dipilih, panggil fungsi upload
+      // 2. Jika ada file foto yang dipilih, unggah fotonya
       if (selectedFile) {
         await handleUploadPhoto();
       }
@@ -119,7 +109,7 @@ const ProfilePage = () => {
       alert(error.message || 'Terjadi kesalahan saat memperbarui profil.');
     }
   };
-  // --- MODIFIKASI SELESAI ---
+
 
   if (!user) {
     return <div className="riwayat-container">Memuat data pegawai...</div>;
@@ -129,11 +119,6 @@ const ProfilePage = () => {
     if (preview) {
       return preview;
     }
-    // Cek jika URL adalah dari Vercel Blob (URL absolut)
-    if (user.profilePictureUrl && user.profilePictureUrl.startsWith('https')) {
-        return `${user.profilePictureUrl}?t=${new Date().getTime()}`;
-    }
-    // Fallback untuk path lokal jika masih ada
     if (user.profilePictureUrl) {
       const baseUrl = user.profilePictureUrl.startsWith('/public')
         ? `${user.profilePictureUrl}`
