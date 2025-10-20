@@ -1,4 +1,3 @@
-import 'dotenv/config'; // <-- TAMBAHKAN BARIS INI
 import mysql from 'mysql2/promise';
 
 // Buat koneksi pool ke database menggunakan environment variables
@@ -11,13 +10,13 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  // Baris ini penting untuk koneksi aman ke Aiven
+  // Opsi SSL ini wajib untuk koneksi ke Aiven
   ssl: {
     rejectUnauthorized: true,
   },
 });
 
-// Fungsi untuk mengambil semua riwayat data untuk seorang pegawai
+// Fungsi untuk mengambil semua riwayat data untuk seorang pegawai (tidak ada perubahan)
 export const fetchAllRiwayat = async (userId) => {
     const riwayat = {};
     const tables = {
