@@ -26,7 +26,7 @@ const Dashboard = () => {
   }
   
   const profileImageUrl = user.profilePictureUrl && user.profilePictureUrl.startsWith('/public')
-    ? `${user.profilePictureUrl}`
+    ? `http://localhost:3001${user.profilePictureUrl}`
     : user.profilePictureUrl || "/assets/profile-pic.jpg";
 
   return (

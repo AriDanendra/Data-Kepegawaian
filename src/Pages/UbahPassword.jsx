@@ -32,7 +32,7 @@ const UbahPassword = () => {
     // Validasi akan dilakukan sepenuhnya oleh backend.
 
     try {
-        const response = await axios.post('/api/auth/change-password', {
+        const response = await axios.post('http://localhost:3001/api/auth/change-password', {
             userId: user.id,
             oldPassword,
             newPassword,

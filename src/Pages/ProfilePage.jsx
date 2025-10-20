@@ -65,7 +65,7 @@ const ProfilePage = () => {
     uploadData.append('profilePicture', selectedFile);
     try {
       const response = await axios.post(
-        `/api/employees/${user.id}/upload-profile-picture`,
+        `http://localhost:3001/api/employees/${user.id}/upload-profile-picture`,
         uploadData,
         {
           headers: {
@@ -91,7 +91,7 @@ const ProfilePage = () => {
     try {
       // 1. Update data teks terlebih dahulu
       const response = await axios.put(
-        `/api/employees/${user.id}`,
+        `http://localhost:3001/api/employees/${user.id}`,
         formData
       );
       updateUser(response.data); // Update context dengan data teks baru
@@ -121,7 +121,7 @@ const ProfilePage = () => {
     }
     if (user.profilePictureUrl) {
       const baseUrl = user.profilePictureUrl.startsWith('/public')
-        ? `${user.profilePictureUrl}`
+        ? `http://localhost:3001${user.profilePictureUrl}`
         : user.profilePictureUrl;
       return `${baseUrl}?t=${new Date().getTime()}`;
     }

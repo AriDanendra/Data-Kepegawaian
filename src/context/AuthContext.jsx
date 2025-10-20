@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           // Kirim token ke backend untuk diverifikasi
-          const response = await axios.get('/api/auth/verify', {
+          const response = await axios.get('http://localhost:3001/api/auth/verify', {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (username, password) => {
-    const response = await fetch('/api/auth/login', {
+    const response = await fetch('http://localhost:3001/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

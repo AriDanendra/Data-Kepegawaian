@@ -35,7 +35,7 @@ const AdminPegawaiProfile = () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/employees/${employeeId}`);
+        const response = await fetch(`http://localhost:3001/api/employees/${employeeId}`);
         if (!response.ok) {
           throw new Error('Pegawai tidak ditemukan');
         }

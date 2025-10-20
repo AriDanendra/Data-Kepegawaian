@@ -83,13 +83,13 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       let response;
       if (modalType.startsWith('add')) {
-        response = await axios.post(`/api/employees/${employeeId}/keluarga`, dataToSend, {
+        response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/keluarga`, dataToSend, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setKeluargaData([...keluargaData, response.data]);
         showSuccessModal('Data keluarga baru berhasil ditambahkan!');
       } else {
-        response = await axios.put(`/api/employees/${employeeId}/keluarga/${selectedData.id}`, dataToSend, {
+        response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/keluarga/${selectedData.id}`, dataToSend, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setKeluargaData(keluargaData.map(item => (item.id === selectedData.id ? response.data : item)));
@@ -104,7 +104,7 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/employees/${employeeId}/keluarga/${selectedData.id}`);
+      await axios.delete(`http://localhost:3001/api/employees/${employeeId}/keluarga/${selectedData.id}`);
       setKeluargaData(keluargaData.filter(item => item.id !== selectedData.id));
       showSuccessModal('Data keluarga berhasil dihapus!');
       handleCloseModal();
@@ -134,7 +134,7 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
   };
 
   const renderFileInput = (berkasLabel) => {
-    const existingFileUrl = formData?.berkasUrl && formData.berkasUrl !== '#' ? `${formData.berkasUrl}` : null;
+    const existingFileUrl = formData?.berkasUrl && formData.berkasUrl !== '#' ? `http://localhost:3001${formData.berkasUrl}` : null;
     const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
 
     return (
@@ -225,7 +225,7 @@ const DataKeluarga = ({ data: propData, employeeId: propEmployeeId }) => {
                 {cells[type].map((cell, i) => <td key={i}>{cell}</td>)}
                 <td>
                     {item.berkasUrl && item.berkasUrl !== '#' ? (
-                        <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                        <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
                             Download
                         </a>
                     ) : (

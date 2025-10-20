@@ -66,7 +66,7 @@ const PegawaiDetailPage = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.get(`/api/employees/${employeeId}`);
+      const response = await axios.get(`http://localhost:3001/api/employees/${employeeId}`);
       setEmployee(response.data);
     } catch (err) {
       setError('Pegawai tidak ditemukan atau gagal mengambil data.');
@@ -94,7 +94,7 @@ const PegawaiDetailPage = () => {
     if (preview) return preview;
     if (!emp || !emp.profilePictureUrl) return '/assets/profile-pic.jpg';
     const baseUrl = emp.profilePictureUrl.startsWith('/public')
-      ? `${emp.profilePictureUrl}`
+      ? `http://localhost:3001${emp.profilePictureUrl}`
       : emp.profilePictureUrl;
     return `${baseUrl}?t=${new Date().getTime()}`;
   };
@@ -128,7 +128,7 @@ const PegawaiDetailPage = () => {
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`/api/employees/${employeeId}`, formData);
+      const response = await axios.put(`http://localhost:3001/api/employees/${employeeId}`, formData);
       setEmployee(response.data);
       
       if (selectedFile) {
@@ -149,7 +149,7 @@ const PegawaiDetailPage = () => {
     uploadData.append('profilePicture', selectedFile);
     try {
       const response = await axios.post(
-        `/api/employees/${employeeId}/upload-profile-picture`,
+        `http://localhost:3001/api/employees/${employeeId}/upload-profile-picture`,
         uploadData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );

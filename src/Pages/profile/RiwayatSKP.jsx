@@ -77,13 +77,13 @@ const RiwayatSKP = ({ data: propData, employeeId: propEmployeeId }) => {
     try {
       let response;
       if (modalType === 'add') {
-        response = await axios.post(`/api/employees/${employeeId}/skp`, dataToSend, {
+        response = await axios.post(`http://localhost:3001/api/employees/${employeeId}/skp`, dataToSend, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setSkpData([...skpData, response.data]);
         showSuccessModal(`Data SKP baru berhasil ditambahkan!`);
       } else {
-        response = await axios.put(`/api/employees/${employeeId}/skp/${selectedData.id}`, dataToSend, {
+        response = await axios.put(`http://localhost:3001/api/employees/${employeeId}/skp/${selectedData.id}`, dataToSend, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         setSkpData(skpData.map(item => (item.id === selectedData.id ? response.data : item)));
@@ -98,7 +98,7 @@ const RiwayatSKP = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/employees/${employeeId}/skp/${selectedData.id}`);
+      await axios.delete(`http://localhost:3001/api/employees/${employeeId}/skp/${selectedData.id}`);
       setSkpData(skpData.filter(item => item.id !== selectedData.id));
       showSuccessModal(`Data SKP telah dihapus!`);
       handleCloseModal();
@@ -129,7 +129,7 @@ const RiwayatSKP = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const renderModalContent = () => {
     if ((modalType === 'edit' || modalType === 'add') && formData) {
-      const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `${formData.berkasUrl}` : null;
+      const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `http://localhost:3001${formData.berkasUrl}` : null;
       const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
 
       return (
@@ -199,7 +199,7 @@ const RiwayatSKP = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.nilaiPrestasi}</td>
                 <td>
                   {item.berkasUrl && item.berkasUrl !== '#' ? (
-                    <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                    <a href={`http://localhost:3001${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
                       Download
                     </a>
                   ) : (
