@@ -14,18 +14,17 @@ cloudinary.config({
 const storageOptions = {
   cloudinary: cloudinary,
   params: {
-    folder: 'data-kepegawaian', // Nama folder di Cloudinary untuk menyimpan file
+    folder: 'data-kepegawaian',
     allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'],
-    // public_id unik untuk setiap file
+    // Tambahkan baris ini
+    resource_type: 'auto', 
     public_id: (req, file) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      // Mengambil nama asli file tanpa ekstensi
       const originalName = file.originalname.split('.').slice(0, -1).join('.');
       return `${originalName}-${uniqueSuffix}`;
     },
   },
 };
-
 const storage = new CloudinaryStorage(storageOptions);
 
 export { cloudinary, storage };
