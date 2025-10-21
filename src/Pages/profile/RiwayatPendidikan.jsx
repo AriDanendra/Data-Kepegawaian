@@ -1,23 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt } from 'react-icons/fa';
-import { useOutletContext } from 'react-router-dom';
-import axios from 'axios';
-import Modal from '../../components/Modal';
-import SuccessModal from '../../components/SuccessModal';
-import { useAuth } from '../../context/AuthContext';
+import React, { useState, useRef, useEffect } from "react";
+import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt } from "react-icons/fa";
+import { useOutletContext } from "react-router-dom";
+import axios from "axios";
+import Modal from "../../components/Modal";
+import SuccessModal from "../../components/SuccessModal";
+import { useAuth } from "../../context/AuthContext";
 
 const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
   const [pendidikanData, setPendidikanData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalType, setModalType] = useState('');
+  const [modalType, setModalType] = useState("");
   const [selectedData, setSelectedData] = useState(null);
   const [formData, setFormData] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
 
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-  
+  const [successMessage, setSuccessMessage] = useState("");
+
   const { user } = useAuth();
   const context = useOutletContext();
   const employeeId = propEmployeeId || user.id;
@@ -30,13 +30,20 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
   const handleOpenModal = (type, dataItem = null) => {
     setModalType(type);
     setSelectedFile(null); // Selalu reset file
-    if (type === 'edit') {
+    if (type === "edit") {
       setSelectedData(dataItem);
       setFormData(dataItem);
-    } else if (type === 'add') {
+    } else if (type === "add") {
       setSelectedData(null);
-      setFormData({ namaSekolah: '', jurusan: '', lokasi: '', noIjazah: '', lulus: '' });
-    } else { // 'delete'
+      setFormData({
+        namaSekolah: "",
+        jurusan: "",
+        lokasi: "",
+        noIjazah: "",
+        lulus: "",
+      });
+    } else {
+      // 'delete'
       setSelectedData(dataItem);
     }
     setIsModalOpen(true);
@@ -44,7 +51,7 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setModalType('');
+    setModalType("");
     setSelectedData(null);
     setFormData(null);
     setSelectedFile(null);
@@ -52,7 +59,7 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
@@ -67,39 +74,58 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
   const handleSaveChanges = async (e) => {
     e.preventDefault();
     const dataToSend = new FormData();
-    Object.keys(formData).forEach(key => {
-        dataToSend.append(key, formData[key] || '');
+    Object.keys(formData).forEach((key) => {
+      dataToSend.append(key, formData[key] || "");
     });
     if (selectedFile) {
-        dataToSend.append('berkas', selectedFile);
+      dataToSend.append("berkas", selectedFile);
     }
 
     try {
       let response;
-      if (modalType === 'add') {
-        response = await axios.post(`/api/employees/${employeeId}/pendidikan`, dataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+      if (modalType === "add") {
+        response = await axios.post(
+          `/api/employees/${employeeId}/pendidikan`,
+          dataToSend,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
         setPendidikanData([...pendidikanData, response.data]);
         showSuccessModal(`Data pendidikan baru berhasil ditambahkan!`);
       } else {
-        response = await axios.put(`/api/employees/${employeeId}/pendidikan/${selectedData.id}`, dataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        setPendidikanData(pendidikanData.map(item => (item.id === selectedData.id ? response.data : item)));
+        response = await axios.put(
+          `/api/employees/${employeeId}/pendidikan/${selectedData.id}`,
+          dataToSend,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+        setPendidikanData(
+          pendidikanData.map((item) =>
+            item.id === selectedData.id ? response.data : item
+          )
+        );
         showSuccessModal(`Data pendidikan berhasil diperbarui!`);
       }
       handleCloseModal();
     } catch (error) {
-      console.error("Gagal menyimpan data pendidikan:", error.response ? error.response.data : error.message);
+      console.error(
+        "Gagal menyimpan data pendidikan:",
+        error.response ? error.response.data : error.message
+      );
       alert("Terjadi kesalahan saat menyimpan data.");
     }
   };
 
   const handleDelete = async () => {
     try {
-      await axios.delete(`/api/employees/${employeeId}/pendidikan/${selectedData.id}`);
-      setPendidikanData(pendidikanData.filter(item => item.id !== selectedData.id));
+      await axios.delete(
+        `/api/employees/${employeeId}/pendidikan/${selectedData.id}`
+      );
+      setPendidikanData(
+        pendidikanData.filter((item) => item.id !== selectedData.id)
+      );
       showSuccessModal(`Data pendidikan telah dihapus!`);
       handleCloseModal();
     } catch (error) {
@@ -109,18 +135,18 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
   };
 
   const getModalTitle = () => {
-    if (modalType === 'edit') return 'Edit Riwayat Pendidikan';
-    if (modalType === 'add') return 'Tambah Riwayat Pendidikan';
-    return 'Konfirmasi Hapus';
+    if (modalType === "edit") return "Edit Riwayat Pendidikan";
+    if (modalType === "add") return "Tambah Riwayat Pendidikan";
+    return "Konfirmasi Hapus";
   };
-  
+
   const getFileNameFromUrl = (url) => {
     if (!url) return "Tidak ada file";
     try {
-      const urlParts = url.split('/');
+      const urlParts = url.split("/");
       const lastPart = urlParts.pop();
-      const nameParts = lastPart.split('-');
-      if (nameParts.length > 3) return nameParts.slice(3).join('-');
+      const nameParts = lastPart.split("-");
+      if (nameParts.length > 3) return nameParts.slice(3).join("-");
       return lastPart;
     } catch {
       return "Nama file tidak valid";
@@ -128,25 +154,80 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
   };
 
   const renderModalContent = () => {
-    if ((modalType === 'edit' || modalType === 'add') && formData) {
-      const existingFileUrl = formData.berkasUrl && formData.berkasUrl !== '#' ? `${formData.berkasUrl}` : null;
-      const existingFileName = existingFileUrl ? getFileNameFromUrl(formData.berkasUrl) : null;
+    if ((modalType === "edit" || modalType === "add") && formData) {
+      const existingFileUrl =
+        formData.berkasUrl && formData.berkasUrl !== "#"
+          ? `${formData.berkasUrl}`
+          : null;
+      const existingFileName = existingFileUrl
+        ? getFileNameFromUrl(formData.berkasUrl)
+        : null;
 
       return (
         <form onSubmit={handleSaveChanges}>
-          <div className="modal-form-group"><label htmlFor="namaSekolah">Nama Sekolah</label><input type="text" id="namaSekolah" name="namaSekolah" value={formData.namaSekolah || ''} onChange={handleInputChange} required /></div>
-          <div className="modal-form-group"><label htmlFor="jurusan">Jurusan</label><input type="text" id="jurusan" name="jurusan" value={formData.jurusan || ''} onChange={handleInputChange} /></div>
-          <div className="modal-form-group"><label htmlFor="lokasi">Lokasi</label><input type="text" id="lokasi" name="lokasi" value={formData.lokasi || ''} onChange={handleInputChange} /></div>
-          <div className="modal-form-group"><label htmlFor="noIjazah">No. Ijazah</label><input type="text" id="noIjazah" name="noIjazah" value={formData.noIjazah || ''} onChange={handleInputChange} /></div>
-          <div className="modal-form-group"><label htmlFor="lulus">Tahun Lulus</label><input type="text" id="lulus" name="lulus" value={formData.lulus || ''} onChange={handleInputChange} /></div>
-          
+          <div className="modal-form-group">
+            <label htmlFor="namaSekolah">Nama Sekolah</label>
+            <input
+              type="text"
+              id="namaSekolah"
+              name="namaSekolah"
+              value={formData.namaSekolah || ""}
+              onChange={handleInputChange}
+              required
+            />
+          </div>
+          <div className="modal-form-group">
+            <label htmlFor="jurusan">Jurusan</label>
+            <input
+              type="text"
+              id="jurusan"
+              name="jurusan"
+              value={formData.jurusan || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="modal-form-group">
+            <label htmlFor="lokasi">Lokasi</label>
+            <input
+              type="text"
+              id="lokasi"
+              name="lokasi"
+              value={formData.lokasi || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="modal-form-group">
+            <label htmlFor="noIjazah">No. Ijazah</label>
+            <input
+              type="text"
+              id="noIjazah"
+              name="noIjazah"
+              value={formData.noIjazah || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="modal-form-group">
+            <label htmlFor="lulus">Tahun Lulus</label>
+            <input
+              type="text"
+              id="lulus"
+              name="lulus"
+              value={formData.lulus || ""}
+              onChange={handleInputChange}
+            />
+          </div>
+
           <div className="modal-form-group">
             <label>Upload Ijazah (Opsional)</label>
-            {modalType === 'edit' && existingFileName && !selectedFile && (
+            {modalType === "edit" && existingFileName && !selectedFile && (
               <div className="current-file-info">
                 <FaFileAlt />
                 <span>{existingFileName}</span>
-                <a href={existingFileUrl} target="_blank" rel="noopener noreferrer" className="download-button-small">
+                <a
+                  href={existingFileUrl}
+                  rel="noopener noreferrer"
+                  className="download-button-small"
+                >
                   <FaDownload /> Unduh
                 </a>
               </div>
@@ -156,20 +237,57 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
                 <FaFileAlt /> <span>File baru: {selectedFile.name}</span>
               </div>
             )}
-            <input type="file" id="berkas" ref={fileInputRef} accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} />
+            <input
+              type="file"
+              id="berkas"
+              ref={fileInputRef}
+              accept=".pdf,.jpg,.jpeg,.png"
+              onChange={handleFileChange}
+            />
           </div>
 
-          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="submit" className="btn btn-primary">Simpan</button></div>
+          <div className="modal-form-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleCloseModal}
+            >
+              Batal
+            </button>
+            <button type="submit" className="btn btn-primary">
+              Simpan
+            </button>
+          </div>
         </form>
       );
     }
 
-    if (modalType === 'delete' && selectedData) {
+    if (modalType === "delete" && selectedData) {
       return (
         <div>
           <p>Anda yakin ingin menghapus data pendidikan:</p>
-          <p><strong>{selectedData.namaSekolah} - Jurusan {selectedData.jurusan}</strong>?</p>
-          <div className="modal-form-actions"><button type="button" className="btn btn-secondary" onClick={handleCloseModal}>Batal</button><button type="button" className="btn btn-danger" onClick={handleDelete}>Hapus</button></div>
+          <p>
+            <strong>
+              {selectedData.namaSekolah} - Jurusan {selectedData.jurusan}
+            </strong>
+            ?
+          </p>
+          <div className="modal-form-actions">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleCloseModal}
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={handleDelete}
+            >
+              Hapus
+            </button>
+          </div>
         </div>
       );
     }
@@ -179,16 +297,36 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
   return (
     <div className="riwayat-container">
       <div className="riwayat-header">
-        <div><h3>Riwayat Pendidikan</h3><p className="subtitle">Informasi riwayat pendidikan.</p></div>
-        <button className="add-button-icon" title="Tambah Riwayat Pendidikan" onClick={() => handleOpenModal('add')}><FaPencilAlt /></button>
+        <div>
+          <h3>Riwayat Pendidikan</h3>
+          <p className="subtitle">Informasi riwayat pendidikan.</p>
+        </div>
+        <button
+          className="add-button-icon"
+          title="Tambah Riwayat Pendidikan"
+          onClick={() => handleOpenModal("add")}
+        >
+          <FaPencilAlt />
+        </button>
       </div>
       <div className="table-controls">
-        <div className="search-box"><label>Search:</label> <input type="search" /></div>
+        <div className="search-box">
+          <label>Search:</label> <input type="search" />
+        </div>
       </div>
       <div className="table-responsive-wrapper">
         <table className="riwayat-table">
           <thead>
-            <tr><th>#</th><th>Nama Sekolah</th><th>Jurusan</th><th>Lokasi</th><th>No. Ijazah</th><th>Lulus</th><th>Berkas</th><th>Opsi</th></tr>
+            <tr>
+              <th>#</th>
+              <th>Nama Sekolah</th>
+              <th>Jurusan</th>
+              <th>Lokasi</th>
+              <th>No. Ijazah</th>
+              <th>Lulus</th>
+              <th>Berkas</th>
+              <th>Opsi</th>
+            </tr>
           </thead>
           <tbody>
             {pendidikanData.map((item, index) => (
@@ -200,8 +338,12 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
                 <td>{item.noIjazah}</td>
                 <td>{item.lulus}</td>
                 <td>
-                  {item.berkasUrl && item.berkasUrl !== '#' ? (
-                    <a href={`${item.berkasUrl}`} className="download-button" target="_blank" rel="noopener noreferrer">
+                  {item.berkasUrl && item.berkasUrl !== "#" ? (
+                    <a
+                      href={`${item.berkasUrl}`}
+                      className="download-button"
+                      rel="noopener noreferrer"
+                    >
                       Download
                     </a>
                   ) : (
@@ -210,8 +352,20 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
                 </td>
                 <td>
                   <div className="action-buttons">
-                    <button className="action-btn edit" title="Edit" onClick={() => handleOpenModal('edit', item)}><FaPencilAlt /></button>
-                    <button className="action-btn delete" title="Delete" onClick={() => handleOpenModal('delete', item)}><FaTrash /></button>
+                    <button
+                      className="action-btn edit"
+                      title="Edit"
+                      onClick={() => handleOpenModal("edit", item)}
+                    >
+                      <FaPencilAlt />
+                    </button>
+                    <button
+                      className="action-btn delete"
+                      title="Delete"
+                      onClick={() => handleOpenModal("delete", item)}
+                    >
+                      <FaTrash />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -219,14 +373,20 @@ const RiwayatPendidikan = ({ data: propData, employeeId: propEmployeeId }) => {
           </tbody>
         </table>
       </div>
-      
-      <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={getModalTitle()}>{renderModalContent()}</Modal>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={getModalTitle()}
+      >
+        {renderModalContent()}
+      </Modal>
 
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => {
-            setIsSuccessModalOpen(false);
-            window.location.reload();
+          setIsSuccessModalOpen(false);
+          window.location.reload();
         }}
         message={successMessage}
       />

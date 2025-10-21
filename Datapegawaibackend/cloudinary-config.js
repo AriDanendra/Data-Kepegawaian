@@ -14,18 +14,26 @@ cloudinary.config({
 const storageOptions = {
   cloudinary: cloudinary,
   params: async (req, file) => {
-    // Tentukan flag berdasarkan tipe file
-    const flags = file.mimetype === 'application/pdf' ? ['attachment'] : [];
+    // Tentukan flag 'attachment' untuk semua tipe file agar langsung diunduh
+    const flags = ['attachment']; // <--- Perubahan di sini
 
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const originalName = file.originalname.split('.').slice(0, -1).join('.');
 
+    // Tentukan folder berdasarkan tipe file (opsional, jika Anda ingin memisahkan)
+    let folder = 'data-kepegawaian/berkas-lain';
+    if (file.mimetype.startsWith('image/')) {
+        folder = 'data-kepegawaian/gambar';
+    } else if (file.mimetype === 'application/pdf') {
+        folder = 'data-kepegawaian/pdf';
+    }
+
     return {
-      folder: 'data-kepegawaian',
-      allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'],
-      resource_type: 'auto',
-      public_id: `${originalName}-${uniqueSuffix}`,
-      flags: flags, // Terapkan flag di sini
+      folder: folder, // Folder dinamis atau statis
+      allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'], // Format yang diizinkan
+      resource_type: 'auto', // Cloudinary akan mendeteksi tipe resource
+      public_id: `${originalName}-${uniqueSuffix}`, // Nama file unik
+      flags: flags, // Terapkan flag 'attachment'
     };
   },
 };
