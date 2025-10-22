@@ -1,3 +1,4 @@
+// src/Pages/profile/RiwayatDiklat.jsx
 import React, { useState, useRef, useEffect } from "react";
 import { FaPencilAlt, FaTrash, FaDownload, FaFileAlt } from "react-icons/fa";
 import { useOutletContext } from "react-router-dom";
@@ -35,13 +36,14 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
       setFormData(data);
     } else if (type === "add") {
       setSelectedData(null);
-      // Menghilangkan 'jenis' dari form data awal
+      // Menambahkan waktuPelatihan ke form data awal
       setFormData({
         namaDiklat: "",
         tempat: "",
         pelaksana: "",
         angkatan: "",
         tanggal: "",
+        waktuPelatihan: "", // Ditambahkan
       });
     } else {
       // 'delete'
@@ -76,6 +78,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     e.preventDefault();
     const dataToSend = new FormData();
     Object.keys(formData).forEach((key) => {
+      // Pastikan mengirim string kosong jika null/undefined
       dataToSend.append(key, formData[key] || "");
     });
     if (selectedFile) {
@@ -157,7 +160,7 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
     if ((modalType === "edit" || modalType === "add") && formData) {
       const existingFileUrl =
         formData.berkasUrl && formData.berkasUrl !== "#"
-          ? `${formData.berkasUrl}`
+          ? `${formData.berkasUrl}` // Jangan tambahkan /public di sini jika URL sudah lengkap dari Cloudinary
           : null;
       const existingFileName = existingFileUrl
         ? getFileNameFromUrl(formData.berkasUrl)
@@ -165,7 +168,6 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
 
       return (
         <form onSubmit={handleSaveChanges}>
-          {/* Field 'Jenis Diklat' telah dihapus dari sini */}
           <div className="modal-form-group">
             <label>Nama Diklat</label>
             <input
@@ -213,6 +215,16 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
               onChange={handleInputChange}
             />
           </div>
+          {/* Input Waktu Pelatihan Ditambahkan */}
+          <div className="modal-form-group">
+            <label>Waktu Pelatihan (Contoh: 3 Hari / 8 JP)</label>
+            <input
+              type="text"
+              name="waktuPelatihan"
+              value={formData.waktuPelatihan || ""}
+              onChange={handleInputChange}
+            />
+          </div>
 
           <div className="modal-form-group">
             <label>Upload Sertifikat (Opsional)</label>
@@ -221,7 +233,8 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
                 <FaFileAlt />
                 <span>{existingFileName}</span>
                 <a
-                  href={existingFileUrl}
+                  href={existingFileUrl} // URL langsung dari Cloudinary
+                  target="_blank" // Buka di tab baru
                   rel="noopener noreferrer"
                   className="download-button-small"
                 >
@@ -309,12 +322,12 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
           <thead>
             <tr>
               <th>#</th>
-              {/* Kolom 'Jenis Diklat' telah dihapus */}
               <th>Nama Diklat</th>
               <th>Tempat</th>
               <th>Pelaksana</th>
               <th>Angkatan</th>
               <th>Tanggal</th>
+              <th>Waktu Pelatihan</th> {/* Header Baru */}
               <th>Berkas</th>
               <th>Opsi</th>
             </tr>
@@ -323,17 +336,18 @@ const RiwayatDiklat = ({ data: propData, employeeId: propEmployeeId }) => {
             {diklatData.map((item, index) => (
               <tr key={item.id}>
                 <td>{index + 1}</td>
-                {/* Sel untuk 'Jenis Diklat' telah dihapus */}
                 <td>{item.namaDiklat}</td>
                 <td>{item.tempat}</td>
                 <td>{item.pelaksana}</td>
                 <td>{item.angkatan}</td>
                 <td>{item.tanggal}</td>
+                <td>{item.waktuPelatihan || '-'}</td> {/* Data Baru */}
                 <td>
                   {item.berkasUrl && item.berkasUrl !== "#" ? (
                     <a
-                      href={`${item.berkasUrl}`}
+                      href={item.berkasUrl} // URL langsung dari Cloudinary
                       className="download-button"
+                      target="_blank" // Buka di tab baru
                       rel="noopener noreferrer"
                     >
                       Download
