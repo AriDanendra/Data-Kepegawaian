@@ -24,7 +24,7 @@ import RiwayatPenghargaan from './Pages/profile/RiwayatPenghargaan';
 import RiwayatCuti from './Pages/profile/RiwayatCuti';
 import RiwayatOrganisasi from './Pages/profile/RiwayatOrganisasi';
 import RiwayatSKP from './Pages/profile/RiwayatSKP';
-import RiwayatSKPPermenpan from './Pages/profile/RiwayatSKPPermenpan';
+
 import RiwayatHukuman from './Pages/profile/RiwayatHukuman';
 import RiwayatSipStr from './Pages/profile/RiwayatSipStr'; // Diimpor
 import UbahPassword from './Pages/UbahPassword';
@@ -94,7 +94,7 @@ function App() {
               <Route path="sipstr" element={<RiwayatSipStr />} /> {/* Ditambahkan */}
               <Route path="organisasi" element={<RiwayatOrganisasi />} />
               <Route path="skp" element={<RiwayatSKP />} />
-              <Route path="skp-permenpan" element={<RiwayatSKPPermenpan />} />
+        
               <Route path="hukuman" element={<RiwayatHukuman />} />
             </Route>
             <Route path="ubah-password" element={<UbahPassword />} />

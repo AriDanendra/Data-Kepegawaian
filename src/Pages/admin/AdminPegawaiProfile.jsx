@@ -17,7 +17,7 @@ import RiwayatOrganisasi from '../profile/RiwayatOrganisasi';
 import RiwayatPendidikan from '../profile/RiwayatPendidikan';
 import RiwayatPenghargaan from '../profile/RiwayatPenghargaan';
 import RiwayatSKP from '../profile/RiwayatSKP';
-import RiwayatSKPPermenpan from '../profile/RiwayatSKPPermenpan';
+
 import StatusKepegawaian from '../profile/StatusKepegawaian';
 
 const AdminPegawaiProfile = () => {
@@ -107,7 +107,6 @@ const AdminPegawaiProfile = () => {
               <NavLink to={`/admin/pegawai/detail/${employeeId}/cuti`} className="menu-item"><FaCalendarAlt size={20} /><span>RIWAYAT CUTI</span></NavLink>
               <NavLink to={`/admin/pegawai/detail/${employeeId}/organisasi`} className="menu-item"><FaSitemap size={20} /><span>RIWAYAT ORGANISASI</span></NavLink>
               <NavLink to={`/admin/pegawai/detail/${employeeId}/skp`} className="menu-item"><FaCheckSquare size={20} /><span>RIWAYAT SKP</span></NavLink>
-              <NavLink to={`/admin/pegawai/detail/${employeeId}/skp-permenpan`} className="menu-item"><FaCheckSquare size={20} /><span>RIWAYAT SKP PERMENPAN</span></NavLink>
               <NavLink to={`/admin/pegawai/detail/${employeeId}/hukuman`} className="menu-item"><FaBalanceScale size={20} /><span>RIWAYAT HUKUMAN</span></NavLink>
             </div>
           </div>

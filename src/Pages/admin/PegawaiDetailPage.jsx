@@ -20,7 +20,6 @@ import RiwayatOrganisasi from '../profile/RiwayatOrganisasi';
 import RiwayatPendidikan from '../profile/RiwayatPendidikan';
 import RiwayatPenghargaan from '../profile/RiwayatPenghargaan';
 import RiwayatSKP from '../profile/RiwayatSKP';
-import RiwayatSKPPermenpan from '../profile/RiwayatSKPPermenpan';
 import StatusKepegawaian from '../profile/StatusKepegawaian';
 import RiwayatSipStr from '../profile/RiwayatSipStr'; // Komponen baru diimpor
 
@@ -36,7 +35,6 @@ const menuItems = [
     { key: 'sipstr', label: 'RIWAYAT SIP/STR', icon: FaFileMedical, component: RiwayatSipStr }, // Menu baru ditambahkan
     { key: 'organisasi', label: 'RIWAYAT ORGANISASI', icon: FaSitemap, component: RiwayatOrganisasi },
     { key: 'skp', label: 'RIWAYAT SKP', icon: FaCheckSquare, component: RiwayatSKP },
-    { key: 'skp_permenpan', label: 'RIWAYAT SKP PERMENPAN', icon: FaCheckSquare, component: RiwayatSKPPermenpan },
     { key: 'hukuman', label: 'RIWAYAT HUKUMAN', icon: FaBalanceScale, component: RiwayatHukuman },
 ];
 
@@ -168,7 +166,6 @@ const PegawaiDetailPage = () => {
     }
     const ComponentToRender = activeComponent.component;
     const dataKey = {
-      'skp_permenpan': 'skpPermenpan',
       'status': 'statusKepegawaian'
     }[activeTab] || activeTab;
 

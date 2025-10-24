@@ -43,7 +43,6 @@ export const fetchAllRiwayat = async (userId) => {
         penghargaan: 'riwayat_penghargaan',
         organisasi: 'riwayat_organisasi',
         skp: 'riwayat_skp',
-        skpPermenpan: 'riwayat_skp_permenpan',
         hukuman: 'riwayat_hukuman',
         sipstr: 'riwayat_sip_str',
     };
